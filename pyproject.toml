@@ -1,0 +1,62 @@
+[build-system]
+requires = ['hatch-vcs>=0.3.0', 'hatchling>=1.24.2,<1.25']
+build-backend = 'hatchling.build'
+
+[project]
+name = 'cogmodels'
+dynamic = ['version']
+description = ''
+readme = 'README.md'
+requires-python = '>=3.10'
+license = 'MIT'
+keywords = []
+authors = [{ name = 'Chenhui Zhang', email = 'zhang.chenhui@outlook.com' }]
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: Implementation :: CPython',
+  'Programming Language :: Python :: Implementation :: PyPy',
+  'Programming Language :: Python',
+]
+dependencies = ['typer']
+
+
+[project.urls]
+# TODO: adds project urls
+# Documentation = 'https://github.com/Chenhui Zhang/cogmodels#readme'
+# Issues = 'https://github.com/Chenhui Zhang/cogmodels/issues'
+# Source = 'https://github.com/Chenhui Zhang/cogmodels'
+
+
+[tool.hatch.version]
+source = 'vcs'
+
+
+[tool.hatch.version.raw-options]
+version_scheme = 'python-simplified-semver'
+local_scheme = 'no-local-version'
+
+
+[tool.hatch.build.hooks.vcs]
+version-file = 'src/cogmodels/_version.py'
+
+
+[tool.mypy]
+strict = true
+
+
+# TODO: test coverage
+# [tool.coverage.run]
+# source_pkgs = ['cogmodels', 'tests']
+# branch = true
+# parallel = true
+# omit = ['src/cogmodels/__about__.py']
+
+# [tool.coverage.paths]
+# cogmodels = ['*/cogmodels/src/cogmodels', 'src/cogmodels']
+# tests = ['*/cogmodels/tests', 'tests']
+
+# [tool.coverage.report]
+# exclude_lines = ['if TYPE_CHECKING:', 'if __name__ == .__main__.:', 'no cov']

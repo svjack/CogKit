@@ -1,0 +1,14 @@
+extend = 'ruff_defaults.toml'
+# https://github.com/astral-sh/ruff/issues/8627
+exclude = ['.git', '.mypy_cache', '.ruff_cache', '.venv', 'dist']
+target-version = 'py310'
+line-length = 80
+
+
+[format]
+line-ending = 'lf'
+quote-style = 'preserve'
+
+
+[lint]
+ignore = ['E999', 'EXE001', 'UP009']

@@ -1,0 +1,16 @@
+[envs.hatch-static-analysis]
+config-path = 'ruff_defaults.toml'
+
+
+[envs.default]
+pre-install-commands = ['python -m pip install --upgrade pip']
+python = '3.10'
+extra-dependencies = ['ruff==0.4.5']
+
+
+[envs.types]
+extra-dependencies = ['mypy>=1.0.0']
+
+
+[envs.types.scripts]
+check = 'mypy --install-types --non-interactive {args:src/cogmodels tests}'
