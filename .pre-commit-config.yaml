@@ -3,8 +3,9 @@ repos:
     rev: v0.4.5
     hooks:
       - id: ruff
-        args: [--fix]
+        args: [--fix, --respect-gitignore, --config=pyproject.toml]
       - id: ruff-format
+        args: [--config=pyproject.toml]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -17,11 +18,3 @@ repos:
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: debug-statements
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-PyYAML
-          - types-setuptools

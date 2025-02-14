@@ -61,8 +61,27 @@ local_scheme = 'no-local-version'
 version-file = 'src/cogmodels/_version.py'
 
 
-[tool.mypy]
-strict = true
+[tool.ruff]
+exclude = ['.git', '.mypy_cache', '.ruff_cache', '.venv', 'dist']
+target-version = 'py310'
+line-length = 100
+
+[tool.ruff.format]
+line-ending = 'lf'
+quote-style = 'preserve'
+
+[tool.ruff.lint]
+select = ["E", "W"]
+ignore = [
+    "E999",
+    "EXE001",
+    "UP009",
+    "F401",
+    "TID252",
+    "F403",
+    "F841",
+    "E501",
+]
 
 
 # TODO: test coverage
