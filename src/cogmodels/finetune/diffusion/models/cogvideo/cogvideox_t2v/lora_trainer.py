@@ -84,17 +84,22 @@ class CogVideoXT2VLoraTrainer(DiffusionTrainer):
 
     @override
     def collate_fn(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        ret = {"encoded_videos": [], "prompt_embedding": []}
+        ret = {"prompt": [], "prompt_embedding": [], "encoded_videos": []}
 
         for sample in samples:
-            encoded_video = sample["encoded_video"]
-            prompt_embedding = sample["prompt_embedding"]
+            prompt = sample.get("prompt", None)
+            prompt_embedding = sample.get("prompt_embedding", None)
+            encoded_video = sample.get("encoded_video", None)
 
-            ret["encoded_videos"].append(encoded_video)
+            ret["prompt"].append(prompt)
             ret["prompt_embedding"].append(prompt_embedding)
+            if encoded_video is not None:
+                ret["encoded_videos"].append(encoded_video)
 
-        ret["encoded_videos"] = torch.stack(ret["encoded_videos"])
         ret["prompt_embedding"] = torch.stack(ret["prompt_embedding"])
+        ret["encoded_videos"] = (
+            torch.stack(ret["encoded_videos"]) if ret["encoded_videos"] else None
+        )
 
         return ret
 
@@ -102,6 +107,8 @@ class CogVideoXT2VLoraTrainer(DiffusionTrainer):
     def compute_loss(self, batch) -> torch.Tensor:
         prompt_embedding = batch["prompt_embedding"]
         latent = batch["encoded_videos"]
+
+        assert latent is not None and prompt_embedding is not None
 
         # Shape of prompt_embedding: [B, seq_len, hidden_size]
         # Shape of latent: [B, C, F, H, W]
@@ -185,20 +192,17 @@ class CogVideoXT2VLoraTrainer(DiffusionTrainer):
         Return the data that needs to be saved. For videos, the data format is List[PIL],
         and for images, the data format is PIL
         """
-        prompt, image, video = (
-            eval_data["prompt"],
-            eval_data["image"],
-            eval_data["video"],
-        )
+        prompt = eval_data["prompt"]
+        prompt_embedding = eval_data["prompt_embedding"]
 
         video_generate = pipe(
             num_frames=self.state.train_frames,
             height=self.state.train_height,
             width=self.state.train_width,
-            prompt=prompt,
+            prompt_embeds=prompt_embedding,
             generator=self.state.generator,
         ).frames[0]
-        return [("video", video_generate)]
+        return [("text", prompt), ("video", video_generate)]
 
     def prepare_rotary_positional_embeddings(
         self,

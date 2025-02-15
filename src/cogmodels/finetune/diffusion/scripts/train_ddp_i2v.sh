@@ -20,16 +20,13 @@ OUTPUT_ARGS=(
 
 # Data Configuration
 DATA_ARGS=(
-    --data_root "/home/lhy/code/cogmodels/CogVideo/finetune/Disney-VideoGeneration-Dataset"
-    --caption_column "prompt.txt"
-    --video_column "videos.txt"
-    # --image_column "images.txt"  # comment this line will use first frame of video as image conditioning
+    --data_root "/home/lhy/code/cogmodels/src/cogmodels/finetune/data/i2v-noimg"
     --train_resolution "81x768x1360"  # (frames x height x width), frames should be 8N+1
 )
 
 # Training Configuration
 TRAIN_ARGS=(
-    --train_epochs 10 # number of training epochs
+    --train_epochs 1 # number of training epochs
     --seed 42 # random seed
     --batch_size 1
     --gradient_accumulation_steps 1
@@ -53,10 +50,7 @@ CHECKPOINT_ARGS=(
 # Validation Configuration
 VALIDATION_ARGS=(
     --do_validation true  # ["true", "false"]
-    --validation_dir "/home/lhy/code/cogmodels/CogVideo/finetune/validation_set"
     --validation_steps 10  # should be multiple of checkpointing_steps
-    --validation_prompts "prompts.txt"
-    --validation_images "images.txt"
     --gen_fps 16
 )
 

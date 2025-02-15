@@ -2,18 +2,21 @@ import hashlib
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import decord
 import torch
 from accelerate.logging import get_logger
+from datasets import load_dataset
 from safetensors.torch import load_file, save_file
 from torch.utils.data import Dataset
 from torchvision import transforms
 from typing_extensions import override
 
-from ..constants import LOG_LEVEL, LOG_NAME
+from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
+
 from .utils import load_prompts, load_videos, preprocess_video_with_resize
 
 if TYPE_CHECKING:
-    from ..trainer import Trainer
+    from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
 
 logger = get_logger(LOG_NAME, LOG_LEVEL)
 
@@ -26,64 +29,48 @@ class BaseT2VDataset(Dataset):
 
     Args:
         data_root (str): Root directory containing the dataset files
-        caption_column (str): Path to file containing text prompts/captions
-        video_column (str): Path to file containing video paths
         device (torch.device): Device to load the data on
-        encode_video_fn (Callable[[torch.Tensor], torch.Tensor], optional): Function to encode videos
+        trainer (DiffusionTrainer): Trainer object
+        using_train (bool): Whether to use the training set
     """
 
     def __init__(
         self,
         data_root: str,
-        caption_column: str,
-        video_column: str,
         device: torch.device = None,
-        trainer: "Trainer" = None,
+        trainer: "DiffusionTrainer" = None,
+        using_train: bool = True,
         *args,
         **kwargs,
     ) -> None:
         super().__init__()
 
-        data_root = Path(data_root)
-        self.prompts = load_prompts(data_root / caption_column)
-        self.videos = load_videos(data_root / video_column)
+        self.using_train = using_train
+        self.data_root = Path(data_root)
+        if using_train:
+            self.data_root = self.data_root / "train"
+            self.data = load_dataset("videofolder", data_dir=self.data_root, split="train")
+        else:
+            self.data_root = self.data_root / "test"
+            self.data = load_dataset("json", data_dir=self.data_root, split="train")
+
         self.device = device
         self.encode_video = trainer.encode_video
         self.encode_text = trainer.encode_text
         self.trainer = trainer
 
-        # Check if all video files exist
-        if any(not path.is_file() for path in self.videos):
-            raise ValueError(
-                f"Some video files were not found. Please ensure that all video files exist in the dataset directory. Missing file: {next(path for path in self.videos if not path.is_file())}"
-            )
-
-        # Check if number of prompts matches number of videos
-        if len(self.videos) != len(self.prompts):
-            raise ValueError(
-                f"Expected length of prompts and videos to be the same but found {len(self.prompts)=} and {len(self.videos)=}. Please ensure that the number of caption prompts and videos match in your dataset."
-            )
-
     def __len__(self) -> int:
-        return len(self.videos)
+        return len(self.data)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        prompt = self.prompts[index]
-        video = self.videos[index]
-        train_resolution_str = "x".join(str(x) for x in self.trainer.args.train_resolution)
+        cache_dir = self.data_root / ".cache"
 
-        cache_dir = self.trainer.args.data_root / "cache"
-        video_latent_dir = (
-            cache_dir / "video_latent" / self.trainer.args.model_name / train_resolution_str
-        )
+        ##### prompt
+        prompt = self.data[index]["prompt"]
         prompt_embeddings_dir = cache_dir / "prompt_embeddings"
-        video_latent_dir.mkdir(parents=True, exist_ok=True)
         prompt_embeddings_dir.mkdir(parents=True, exist_ok=True)
-
         prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
         prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
-        encoded_video_path = video_latent_dir / (video.stem + ".safetensors")
-
         if prompt_embedding_path.exists():
             prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
             logger.debug(
@@ -100,6 +87,23 @@ class BaseT2VDataset(Dataset):
                 f"Saved prompt embedding to {prompt_embedding_path}",
                 main_process_only=False,
             )
+        if not self.using_train:
+            return {
+                "prompt": prompt,
+                "prompt_embedding": prompt_embedding,
+            }
+
+        ##### video
+        video = self.data[index]["video"]
+        video_path = Path(video._hf_encoded["path"])
+
+        train_resolution_str = "x".join(str(x) for x in self.trainer.args.train_resolution)
+
+        video_latent_dir = (
+            cache_dir / "video_latent" / self.trainer.args.model_name / train_resolution_str
+        )
+        video_latent_dir.mkdir(parents=True, exist_ok=True)
+        encoded_video_path = video_latent_dir / (video_path.stem + ".safetensors")
 
         if encoded_video_path.exists():
             encoded_video = load_file(encoded_video_path)["encoded_video"]
@@ -108,8 +112,7 @@ class BaseT2VDataset(Dataset):
                 main_process_only=False,
             )
         else:
-            frames = self.preprocess(video)
-            frames = frames.to(self.device)
+            frames = self.preprocess(video, self.device)
             # Current shape of frames: [F, C, H, W]
             frames = self.video_transform(frames)
             # Convert to [B, C, F, H, W]
@@ -126,23 +129,21 @@ class BaseT2VDataset(Dataset):
                 main_process_only=False,
             )
 
-        # shape of encoded_video: [C, F, H, W]
         return {
+            "prompt": prompt,
             "prompt_embedding": prompt_embedding,
-            "encoded_video": encoded_video,
-            "video_metadata": {
-                "num_frames": encoded_video.shape[1],
-                "height": encoded_video.shape[2],
-                "width": encoded_video.shape[3],
-            },
+            "encoded_video": encoded_video,  # shape: [C, F, H, W]
         }
 
-    def preprocess(self, video_path: Path) -> torch.Tensor:
+    def preprocess(
+        self, video: decord.VideoReader, device: torch.device = torch.device("cpu")
+    ) -> torch.Tensor:
         """
         Loads and preprocesses a video.
 
         Args:
-            video_path: Path to the video file to load.
+            video: decord.VideoReader object
+            device: torch.device
 
         Returns:
             torch.Tensor: Video tensor of shape [F, C, H, W] where:
@@ -196,12 +197,15 @@ class T2VDatasetWithResize(BaseT2VDataset):
         )
 
     @override
-    def preprocess(self, video_path: Path) -> torch.Tensor:
+    def preprocess(
+        self, video: decord.VideoReader, device: torch.device = torch.device("cpu")
+    ) -> torch.Tensor:
         return preprocess_video_with_resize(
-            video_path,
+            video,
             self.max_num_frames,
             self.height,
             self.width,
+            device,
         )
 
     @override

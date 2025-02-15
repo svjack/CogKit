@@ -1,8 +1,11 @@
 import logging
 from pathlib import Path
+import torchvision.transforms as transforms
 
 import cv2
+import numpy as np
 import torch
+from PIL import Image
 
 # Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
 # Very few bug reports but it happens. Look in decord Github issues for more relevant information.
@@ -68,17 +71,19 @@ def load_images_from_videos(videos_path: list[Path]) -> list[Path]:
 
 
 def preprocess_image_with_resize(
-    image_path: Path | str,
+    image: Image.Image,
     height: int,
     width: int,
+    device: torch.device,
 ) -> torch.Tensor:
     """
     Loads and resizes a single image.
 
     Args:
-        image_path: Path to the image file.
+        image: PIL.Image.Image object
         height: Target height for resizing.
         width: Target width for resizing.
+        device: Device to load the data on
 
     Returns:
         torch.Tensor: Image tensor with shape [C, H, W] where:
@@ -86,21 +91,26 @@ def preprocess_image_with_resize(
             H = height
             W = width
     """
-    if isinstance(image_path, str):
-        image_path = Path(image_path)
-    image = cv2.imread(image_path.as_posix())
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.resize(image, (width, height))
-    image = torch.from_numpy(image).float()
-    image = image.permute(2, 0, 1).contiguous()
+    image = image.convert("RGB")
+    transform = transforms.ToTensor()
+    image = transform(image).float().contiguous()
+    image = torch.nn.functional.interpolate(
+        image.unsqueeze(0),
+        size=(height, width),
+        mode="bilinear",
+        align_corners=False,
+    ).squeeze(0)
+
+    assert image.shape == (3, height, width)
     return image
 
 
 def preprocess_video_with_resize(
-    video_path: Path | str,
+    video: decord.VideoReader,
     max_num_frames: int,
     height: int,
     width: int,
+    device: torch.device,
 ) -> torch.Tensor:
     """
     Loads and resizes a single video.
@@ -110,10 +120,11 @@ def preprocess_video_with_resize(
       2. If video dimensions don't match (height, width), resize frames
 
     Args:
-        video_path: Path to the video file.
+        video: decord.VideoReader object
         max_num_frames: Maximum number of frames to keep.
         height: Target height for resizing.
         width: Target width for resizing.
+        device: Device to load the data on
 
     Returns:
         A torch.Tensor with shape [F, C, H, W] where:
@@ -122,22 +133,39 @@ def preprocess_video_with_resize(
           H = height
           W = width
     """
-    if isinstance(video_path, str):
-        video_path = Path(video_path)
-    video_reader = decord.VideoReader(uri=video_path.as_posix(), width=width, height=height)
-    video_num_frames = len(video_reader)
+    video_num_frames = len(video)
     if video_num_frames < max_num_frames:
         # Get all frames first
-        frames = video_reader.get_batch(list(range(video_num_frames)))
+        frames = video.get_batch(list(range(video_num_frames))).float().to(device)
+
+        # Resize frames to target dimensions
+        frames = frames.permute(0, 3, 1, 2)  # [F, H, W, C] -> [F, C, H, W]
+        frames = torch.nn.functional.interpolate(
+            frames,
+            size=(height, width),
+            mode="bilinear",
+            align_corners=False,
+        )
+
         # Repeat the last frame until we reach max_num_frames
         last_frame = frames[-1:]
         num_repeats = max_num_frames - video_num_frames
         repeated_frames = last_frame.repeat(num_repeats, 1, 1, 1)
         frames = torch.cat([frames, repeated_frames], dim=0)
-        return frames.float().permute(0, 3, 1, 2).contiguous()
+
     else:
         indices = list(range(0, video_num_frames, video_num_frames // max_num_frames))
-        frames = video_reader.get_batch(indices)
-        frames = frames[:max_num_frames].float()
-        frames = frames.permute(0, 3, 1, 2).contiguous()
-        return frames
+        frames = video.get_batch(indices).float().to(device)
+
+        # Resize frames to target dimensions
+        frames = frames.permute(0, 3, 1, 2)  # [F, H, W, C] -> [F, C, H, W]
+        frames = torch.nn.functional.interpolate(
+            frames,
+            size=(height, width),
+            mode="bilinear",
+            align_corners=False,
+        )
+
+        frames = frames[:max_num_frames]
+
+    return frames.contiguous()

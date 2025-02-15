@@ -1,15 +1,19 @@
 import hashlib
+import torchvision.transforms as transforms
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import torch
 from accelerate.logging import get_logger
+from datasets import load_dataset
+from PIL import Image
 from safetensors.torch import load_file, save_file
 from torch.utils.data import Dataset
 from torchvision import transforms
 from typing_extensions import override
 
-from ..constants import LOG_LEVEL, LOG_NAME
+from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
+
 from .utils import (
     load_images,
     load_images_from_videos,
@@ -20,7 +24,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from ..trainer import Trainer
+    from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
 
 # Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
 # Very few bug reports but it happens. Look in decord Github issues for more relevant information.
@@ -49,68 +53,70 @@ class BaseI2VDataset(Dataset):
     def __init__(
         self,
         data_root: str,
-        caption_column: str,
-        video_column: str,
-        image_column: str | None,
         device: torch.device,
-        trainer: "Trainer" = None,
+        trainer: "DiffusionTrainer" = None,
+        using_train: bool = True,
         *args,
         **kwargs,
     ) -> None:
         super().__init__()
 
-        data_root = Path(data_root)
-        self.prompts = load_prompts(data_root / caption_column)
-        self.videos = load_videos(data_root / video_column)
-        if image_column is not None:
-            self.images = load_images(data_root / image_column)
+        self.data_root = Path(data_root)
+        self.using_train = using_train
+
+        if using_train:
+            self.data_root = self.data_root / "train"
+            video_data = load_dataset("videofolder", data_dir=self.data_root, split="train")
+            try:
+                image_data = load_dataset("imagefolder", data_dir=self.data_root, split="train")
+
+                video_data = video_data.sort("id")
+                image_data = image_data.sort("id")
+
+                # Map function to update video dataset with corresponding images
+                def update_with_image(video_example, idx):
+                    video_example["image"] = image_data[idx]["image"]
+                    return video_example
+
+                self.data = video_data.map(update_with_image, with_indices=True)
+
+            except ValueError:
+                logger.warning(
+                    f"No image data found in {self.data_root}, using first frame of video instead"
+                )
+
+                def add_first_frame(example):
+                    video: decord.VideoReader = example["video"]
+                    first_frame = video[0][0]
+                    first_frame = first_frame.permute(2, 0, 1)  # [H, W, C] -> [C, H, W]
+                    to_pil = transforms.ToPILImage()
+                    example["image"] = [to_pil(first_frame)]
+                    return example
+
+                # self.data = video_data.map(add_first_frame)
+                self.data = video_data.with_transform(add_first_frame)
+
         else:
-            self.images = load_images_from_videos(self.videos)
-        self.trainer = trainer
+            self.data_root = self.data_root / "test"
+            self.data = load_dataset("imagefolder", data_dir=self.data_root, split="train")
 
         self.device = device
         self.encode_video = trainer.encode_video
         self.encode_text = trainer.encode_text
-
-        # Check if number of prompts matches number of videos and images
-        if not (len(self.videos) == len(self.prompts) == len(self.images)):
-            raise ValueError(
-                f"Expected length of prompts, videos and images to be the same but found {len(self.prompts)=}, {len(self.videos)=} and {len(self.images)=}. Please ensure that the number of caption prompts, videos and images match in your dataset."
-            )
-
-        # Check if all video files exist
-        if any(not path.is_file() for path in self.videos):
-            raise ValueError(
-                f"Some video files were not found. Please ensure that all video files exist in the dataset directory. Missing file: {next(path for path in self.videos if not path.is_file())}"
-            )
-
-        # Check if all image files exist
-        if any(not path.is_file() for path in self.images):
-            raise ValueError(
-                f"Some image files were not found. Please ensure that all image files exist in the dataset directory. Missing file: {next(path for path in self.images if not path.is_file())}"
-            )
+        self.trainer = trainer
 
     def __len__(self) -> int:
-        return len(self.videos)
+        return len(self.data)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        prompt = self.prompts[index]
-        video = self.videos[index]
-        image = self.images[index]
-        train_resolution_str = "x".join(str(x) for x in self.trainer.args.train_resolution)
+        cache_dir = self.data_root / ".cache"
 
-        cache_dir = self.trainer.args.data_root / "cache"
-        video_latent_dir = (
-            cache_dir / "video_latent" / self.trainer.args.model_name / train_resolution_str
-        )
+        ##### prompt
+        prompt = self.data[index]["prompt"]
         prompt_embeddings_dir = cache_dir / "prompt_embeddings"
-        video_latent_dir.mkdir(parents=True, exist_ok=True)
         prompt_embeddings_dir.mkdir(parents=True, exist_ok=True)
-
         prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
         prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
-        encoded_video_path = video_latent_dir / (video.stem + ".safetensors")
-
         if prompt_embedding_path.exists():
             prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
             logger.debug(
@@ -128,23 +134,41 @@ class BaseI2VDataset(Dataset):
                 main_process_only=False,
             )
 
+        ##### image
+        image_preprocessed = self.data[index]["image"]
+        image_original = image_preprocessed
+        _, image_preprocessed = self.preprocess(None, image_preprocessed, self.device)
+        image_preprocessed = self.image_transform(image_preprocessed)
+        image_preprocessed = image_preprocessed.to("cpu")
+        # shape of image: [C, H, W]
+
+        if not self.using_train:
+            return {
+                "image": image_original,
+                "image_preprocessed": image_preprocessed,
+                "prompt": prompt,
+                "prompt_embedding": prompt_embedding,
+            }
+
+        ##### video
+        video = self.data[index]["video"]
+        video_path = Path(video._hf_encoded["path"])
+        train_resolution_str = "x".join(str(x) for x in self.trainer.args.train_resolution)
+
+        video_latent_dir = (
+            cache_dir / "video_latent" / self.trainer.args.model_name / train_resolution_str
+        )
+        video_latent_dir.mkdir(parents=True, exist_ok=True)
+
+        encoded_video_path = video_latent_dir / (video_path.stem + ".safetensors")
+
         if encoded_video_path.exists():
             encoded_video = load_file(encoded_video_path)["encoded_video"]
-            logger.debug(
-                f"Loaded encoded video from {encoded_video_path}",
-                main_process_only=False,
-            )
-            # shape of image: [C, H, W]
-            _, image = self.preprocess(None, self.images[index])
-            image = self.image_transform(image)
+            logger.debug(f"Loaded encoded video from {encoded_video_path}", main_process_only=False)
         else:
-            frames, image = self.preprocess(video, image)
-            frames = frames.to(self.device)
-            image = image.to(self.device)
-            image = self.image_transform(image)
+            frames, _ = self.preprocess(video, None, self.device)
             # Current shape of frames: [F, C, H, W]
             frames = self.video_transform(frames)
-
             # Convert to [B, C, F, H, W]
             frames = frames.unsqueeze(0)
             frames = frames.permute(0, 2, 1, 3, 4).contiguous()
@@ -153,7 +177,6 @@ class BaseI2VDataset(Dataset):
             # [1, C, F, H, W] -> [C, F, H, W]
             encoded_video = encoded_video[0]
             encoded_video = encoded_video.to("cpu")
-            image = image.to("cpu")
             save_file({"encoded_video": encoded_video}, encoded_video_path)
             logger.info(
                 f"Saved encoded video to {encoded_video_path}",
@@ -163,26 +186,28 @@ class BaseI2VDataset(Dataset):
         # shape of encoded_video: [C, F, H, W]
         # shape of image: [C, H, W]
         return {
-            "image": image,
+            "image": image_original,
+            "image_preprocessed": image_preprocessed,
+            "prompt": prompt,
             "prompt_embedding": prompt_embedding,
+            "video": video,
             "encoded_video": encoded_video,
-            "video_metadata": {
-                "num_frames": encoded_video.shape[1],
-                "height": encoded_video.shape[2],
-                "width": encoded_video.shape[3],
-            },
         }
 
     def preprocess(
-        self, video_path: Path | None, image_path: Path | None
+        self,
+        video: decord.VideoReader | None,
+        image: Image.Image | None,
+        device: torch.device = torch.device("cpu"),
     ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Loads and preprocesses a video and an image.
         If either path is None, no preprocessing will be done for that input.
 
         Args:
-            video_path: Path to the video file to load
-            image_path: Path to the image file to load
+            video: decord.VideoReader object
+            image: PIL.Image.Image object
+            device: Device to load the data on
 
         Returns:
             A tuple containing:
@@ -254,16 +279,19 @@ class I2VDatasetWithResize(BaseI2VDataset):
 
     @override
     def preprocess(
-        self, video_path: Path | None, image_path: Path | None
+        self,
+        video: decord.VideoReader | None,
+        image: Image.Image | None,
+        device: torch.device = torch.device("cpu"),
     ) -> tuple[torch.Tensor, torch.Tensor]:
-        if video_path is not None:
+        if video is not None:
             video = preprocess_video_with_resize(
-                video_path, self.max_num_frames, self.height, self.width
+                video, self.max_num_frames, self.height, self.width, device
             )
         else:
             video = None
-        if image_path is not None:
-            image = preprocess_image_with_resize(image_path, self.height, self.width)
+        if image is not None:
+            image = preprocess_image_with_resize(image, self.height, self.width, device)
         else:
             image = None
         return video, image

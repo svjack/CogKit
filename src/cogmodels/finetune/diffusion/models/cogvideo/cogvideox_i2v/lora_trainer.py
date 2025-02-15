@@ -84,20 +84,33 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
 
     @override
     def collate_fn(self, samples: list[dict[str, Any]]) -> dict[str, Any]:
-        ret = {"encoded_videos": [], "prompt_embedding": [], "images": []}
+        ret = {
+            "prompt": [],
+            "prompt_embedding": [],
+            "image": [],
+            "image_preprocessed": [],
+            "encoded_videos": [],
+        }
 
         for sample in samples:
-            encoded_video = sample["encoded_video"]
+            prompt = sample["prompt"]
             prompt_embedding = sample["prompt_embedding"]
             image = sample["image"]
+            image_preprocessed = sample["image_preprocessed"]
+            encoded_video = sample.get("encoded_video", None)
 
-            ret["encoded_videos"].append(encoded_video)
+            ret["prompt"].append(prompt)
             ret["prompt_embedding"].append(prompt_embedding)
-            ret["images"].append(image)
+            ret["image"].append(image)
+            ret["image_preprocessed"].append(image_preprocessed)
+            if encoded_video is not None:
+                ret["encoded_videos"].append(encoded_video)
 
-        ret["encoded_videos"] = torch.stack(ret["encoded_videos"])
         ret["prompt_embedding"] = torch.stack(ret["prompt_embedding"])
-        ret["images"] = torch.stack(ret["images"])
+        ret["image_preprocessed"] = torch.stack(ret["image_preprocessed"])
+        ret["encoded_videos"] = (
+            torch.stack(ret["encoded_videos"]) if ret["encoded_videos"] else None
+        )
 
         return ret
 
@@ -105,7 +118,7 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
     def compute_loss(self, batch) -> torch.Tensor:
         prompt_embedding = batch["prompt_embedding"]
         latent = batch["encoded_videos"]
-        images = batch["images"]
+        images = batch["image_preprocessed"]
 
         # Shape of prompt_embedding: [B, seq_len, hidden_size]
         # Shape of latent: [B, C, F, H, W]
@@ -230,8 +243,9 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
         Return the data that needs to be saved. For videos, the data format is List[PIL],
         and for images, the data format is PIL
         """
-        prompt, image, video = (
+        prompt, prompt_embedding, image, video = (
             eval_data["prompt"],
+            eval_data["prompt_embedding"],
             eval_data["image"],
             eval_data["video"],
         )
@@ -240,11 +254,11 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
             num_frames=self.state.train_frames,
             height=self.state.train_height,
             width=self.state.train_width,
-            prompt=prompt,
+            prompt_embeds=prompt_embedding,
             image=image,
             generator=self.state.generator,
         ).frames[0]
-        return [("video", video_generate)]
+        return [("prompt", prompt), ("image", image), ("video", video_generate)]
 
     def prepare_rotary_positional_embeddings(
         self,

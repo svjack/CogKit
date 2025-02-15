@@ -66,8 +66,10 @@ class BaseTrainer(ABC):
         self.components = self.load_components()
 
         self.accelerator: Accelerator = None
-        self.dataset: Dataset = None
-        self.data_loader: DataLoader = None
+        self.train_dataset: Dataset = None
+        self.test_dataset: Dataset = None
+        self.train_data_loader: DataLoader = None
+        self.test_data_loader: DataLoader = None
 
         self.optimizer = None
         self.lr_scheduler = None
@@ -216,7 +218,7 @@ class BaseTrainer(ABC):
         )
 
         num_update_steps_per_epoch = math.ceil(
-            len(self.data_loader) / self.args.gradient_accumulation_steps
+            len(self.train_data_loader) / self.args.gradient_accumulation_steps
         )
         if self.args.train_steps is None:
             self.args.train_steps = self.args.train_epochs * num_update_steps_per_epoch
@@ -255,18 +257,22 @@ class BaseTrainer(ABC):
         (
             self.components.transformer,
             self.optimizer,
-            self.data_loader,
+            self.train_data_loader,
             self.lr_scheduler,
         ) = self.accelerator.prepare(
             self.components.transformer,
             self.optimizer,
-            self.data_loader,
+            self.train_data_loader,
             self.lr_scheduler,
         )
 
+        if self.args.do_validation:
+            assert self.test_data_loader is not None
+            self.test_data_loader = self.accelerator.prepare_data_loader(self.test_data_loader)
+
         # We need to recalculate our total training steps as the size of the training dataloader may have changed.
         num_update_steps_per_epoch = math.ceil(
-            len(self.data_loader) / self.args.gradient_accumulation_steps
+            len(self.train_data_loader) / self.args.gradient_accumulation_steps
         )
         if self.state.overwrote_max_train_steps:
             self.args.train_steps = self.args.train_epochs * num_update_steps_per_epoch
@@ -289,11 +295,11 @@ class BaseTrainer(ABC):
         )
         info = {
             "trainable parameters": self.state.num_trainable_parameters,
-            "total samples": len(self.dataset),
+            "total samples": len(self.train_dataset),
             "train epochs": self.args.train_epochs,
             "train steps": self.args.train_steps,
             "batches per device": self.args.batch_size,
-            "total batches observed per epoch": len(self.data_loader),
+            "total batches observed per epoch": len(self.train_data_loader),
             "train batch size total count": self.state.total_batch_size_count,
             "gradient accumulation steps": self.args.gradient_accumulation_steps,
         }
@@ -337,7 +343,7 @@ class BaseTrainer(ABC):
             self.components.transformer.train()
             models_to_accumulate = [self.components.transformer]
 
-            for step, batch in enumerate(self.data_loader):
+            for step, batch in enumerate(self.train_data_loader):
                 self.logger.debug(f"Starting step {step + 1}")
                 logs = {}
 
@@ -427,10 +433,6 @@ class BaseTrainer(ABC):
         self.logger.info("Preparing for training...")
         self.prepare_for_training()
 
-        if self.args.do_validation:
-            self.logger.info("Preparing for validation...")
-            self.prepare_for_validation()
-
         self.logger.info("Initializing trackers...")
         self.prepare_trackers()
 
@@ -458,16 +460,12 @@ class BaseTrainer(ABC):
 
     @abstractmethod
     def prepare_dataset(self) -> None:
-        # initialize `self.dataset` and `self.data_loader`
+        # initialize `self.train_dataset` and `self.train_data_loader`
+        # initialize `self.test_dataset` and `self.test_data_loader` if `self.args.do_validation` is True
         raise NotImplementedError
 
     @abstractmethod
     def compute_loss(self, batch) -> torch.Tensor:
-        raise NotImplementedError
-
-    @abstractmethod
-    def prepare_for_validation(self) -> None:
-        # prepare dataset for validation
         raise NotImplementedError
 
     @abstractmethod

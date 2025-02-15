@@ -22,8 +22,8 @@ from ..utils import (
     unload_model,
 )
 from .constants import LOG_LEVEL, LOG_NAME
-from .datasets import I2VDatasetWithResize, T2VDatasetWithResize
-from .datasets.utils import (
+from .diff_datasets import I2VDatasetWithResize, T2VDatasetWithResize
+from .diff_datasets.utils import (
     load_images,
     load_prompts,
     load_videos,
@@ -76,25 +76,48 @@ class DiffusionTrainer(BaseTrainer):
     def prepare_dataset(self) -> None:
         # TODO: refactor later
         if self.args.model_type == "i2v":
-            self.dataset = I2VDatasetWithResize(
+            additional_args = {
+                "device": self.accelerator.device,
+                "max_num_frames": self.state.train_frames,
+                "height": self.state.train_height,
+                "width": self.state.train_width,
+                "trainer": self,
+            }
+            self.train_dataset = I2VDatasetWithResize(
                 **(self.args.model_dump()),
-                device=self.accelerator.device,
-                max_num_frames=self.state.train_frames,
-                height=self.state.train_height,
-                width=self.state.train_width,
-                trainer=self,
+                **additional_args,
+                using_train=True,
             )
+            if self.args.do_validation:
+                self.test_dataset = I2VDatasetWithResize(
+                    **(self.args.model_dump()),
+                    **additional_args,
+                    using_train=False,
+                )
+
         elif self.args.model_type == "t2v":
-            self.dataset = T2VDatasetWithResize(
+            additional_args = {
+                "device": self.accelerator.device,
+                "max_num_frames": self.state.train_frames,
+                "height": self.state.train_height,
+                "width": self.state.train_width,
+                "trainer": self,
+            }
+            self.train_dataset = T2VDatasetWithResize(
                 **(self.args.model_dump()),
-                device=self.accelerator.device,
-                max_num_frames=self.state.train_frames,
-                height=self.state.train_height,
-                width=self.state.train_width,
-                trainer=self,
+                **additional_args,
+                using_train=True,
             )
+            if self.args.do_validation:
+                self.test_dataset = T2VDatasetWithResize(
+                    **(self.args.model_dump()),
+                    **additional_args,
+                    using_train=False,
+                )
+
         elif self.args.model_type == "t2i":
             ...
+
         else:
             raise ValueError(f"Invalid model type: {self.args.model_type}")
 
@@ -110,16 +133,20 @@ class DiffusionTrainer(BaseTrainer):
 
         # Precompute latent for video and prompt embedding
         self.logger.info("Precomputing latent for video and prompt embedding ...")
-        tmp_data_loader = torch.utils.data.DataLoader(
-            self.dataset,
-            collate_fn=self.collate_fn,
-            batch_size=1,
-            num_workers=0,
-            pin_memory=self.args.pin_memory,
-        )
-        tmp_data_loader = self.accelerator.prepare_data_loader(tmp_data_loader)
-        for _ in tmp_data_loader:
-            ...
+        for dataset in [self.train_dataset, self.test_dataset]:
+            if dataset is None:
+                continue
+            tmp_data_loader = torch.utils.data.DataLoader(
+                dataset,
+                collate_fn=self.collate_fn,
+                batch_size=1,
+                num_workers=0,
+                pin_memory=self.args.pin_memory,
+            )
+            tmp_data_loader = self.accelerator.prepare_data_loader(tmp_data_loader)
+            for _ in tmp_data_loader:
+                ...
+
         self.accelerator.wait_for_everyone()
         self.logger.info("Precomputing latent for video and prompt embedding ... Done")
 
@@ -127,33 +154,23 @@ class DiffusionTrainer(BaseTrainer):
         unload_model(self.components.text_encoder)
         free_memory()
 
-        self.data_loader = torch.utils.data.DataLoader(
-            self.dataset,
+        self.train_data_loader = torch.utils.data.DataLoader(
+            self.train_dataset,
             collate_fn=self.collate_fn,
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
             pin_memory=self.args.pin_memory,
             shuffle=True,
         )
-
-    @override
-    def prepare_for_validation(self):
-        # TODO: refactor later
-        validation_prompts = load_prompts(self.args.validation_dir / self.args.validation_prompts)
-
-        if self.args.validation_images is not None:
-            validation_images = load_images(self.args.validation_dir / self.args.validation_images)
-        else:
-            validation_images = [None] * len(validation_prompts)
-
-        if self.args.validation_videos is not None:
-            validation_videos = load_videos(self.args.validation_dir / self.args.validation_videos)
-        else:
-            validation_videos = [None] * len(validation_prompts)
-
-        self.state.validation_prompts = validation_prompts
-        self.state.validation_images = validation_images
-        self.state.validation_videos = validation_videos
+        if self.args.do_validation:
+            self.test_data_loader = torch.utils.data.DataLoader(
+                self.test_dataset,
+                collate_fn=self.collate_fn,
+                batch_size=1,
+                num_workers=self.args.num_workers,
+                pin_memory=self.args.pin_memory,
+                shuffle=False,
+            )
 
     @override
     def validate(self, step: int) -> None:
@@ -161,7 +178,7 @@ class DiffusionTrainer(BaseTrainer):
         self.logger.info("Starting validation")
 
         accelerator = self.accelerator
-        num_validation_samples = len(self.state.validation_prompts)
+        num_validation_samples = len(self.test_data_loader)
 
         if num_validation_samples == 0:
             self.logger.warning("No validation samples found. Skipping validation.")
@@ -181,7 +198,6 @@ class DiffusionTrainer(BaseTrainer):
         if self.state.using_deepspeed:
             # Can't using model_cpu_offload in deepspeed,
             # so we need to move all components in pipe to device
-            # pipe.to(self.accelerator.device, dtype=self.state.weight_dtype)
             self.move_components_to_device(
                 dtype=self.state.weight_dtype, ignore_list=["transformer"]
             )
@@ -197,66 +213,50 @@ class DiffusionTrainer(BaseTrainer):
         #################################
 
         all_processes_artifacts = []
-        for i in range(num_validation_samples):
-            if not self.state.using_deepspeed or (
-                self.state.using_deepspeed and self.accelerator.deepspeed_plugin.zero_stage != 3
-            ):
-                # Skip current validation on all processes but one
-                if i % accelerator.num_processes != accelerator.process_index:
-                    continue
+        for i, batch in enumerate(self.test_data_loader):
+            assert i == 0  # only batch size = 0 is currently supported
+            prompt = batch.get("prompt", [None])[0]
+            prompt_embedding = batch.get("prompt_embedding", None)
 
-            prompt = self.state.validation_prompts[i]
-            image = self.state.validation_images[i]
-            video = self.state.validation_videos[i]
+            image = batch.get("image", [None])[0]
+            encoded_image = batch.get("encoded_image", None)
 
-            if image is not None:
-                image = preprocess_image_with_resize(
-                    image, self.state.train_height, self.state.train_width
-                )
-                # Convert image tensor (C, H, W) to PIL images
-                image = image.to(torch.uint8)
-                image = image.permute(1, 2, 0).cpu().numpy()
-                image = Image.fromarray(image)
-
-            if video is not None:
-                video = preprocess_video_with_resize(
-                    video,
-                    self.state.train_frames,
-                    self.state.train_height,
-                    self.state.train_width,
-                )
-                # Convert video tensor (F, C, H, W) to list of PIL images
-                video = video.round().clamp(0, 255).to(torch.uint8)
-                video = [Image.fromarray(frame.permute(1, 2, 0).cpu().numpy()) for frame in video]
+            video = batch.get("video", [None])[0]
+            encoded_video = batch.get("encoded_video", None)
 
             self.logger.debug(
                 f"Validating sample {i + 1}/{num_validation_samples} on process {accelerator.process_index}. Prompt: {prompt}",
                 main_process_only=False,
             )
             validation_artifacts = self.validation_step(
-                {"prompt": prompt, "image": image, "video": video}, pipe
+                {
+                    "prompt": prompt,
+                    "prompt_embedding": prompt_embedding,
+                    "image": image,
+                    "encoded_image": encoded_image,
+                    "video": video,
+                    "encoded_video": encoded_video,
+                },
+                pipe,
             )
 
-            if (
-                self.state.using_deepspeed
-                and self.accelerator.deepspeed_plugin.zero_stage == 3
-                and not accelerator.is_main_process
-            ):
-                continue
+            # if (
+            #     self.state.using_deepspeed
+            #     and self.accelerator.deepspeed_plugin.zero_stage == 3
+            #     and not accelerator.is_main_process
+            # ):
+            #     continue
 
-            prompt_filename = string_to_filename(prompt)[:25]
-            # Calculate hash of reversed prompt as a unique identifier
-            reversed_prompt = prompt[::-1]
-            hash_suffix = hashlib.md5(reversed_prompt.encode()).hexdigest()[:5]
+            # prompt_filename = string_to_filename(prompt)[:25]
+            # # Calculate hash of reversed prompt as a unique identifier
+            # reversed_prompt = prompt[::-1]
+            # hash_suffix = hashlib.md5(reversed_prompt.encode()).hexdigest()[:5]
 
-            artifacts = {
-                "image": {"type": "image", "value": image},
-                "video": {"type": "video", "value": video},
-            }
-            for i, (artifact_type, artifact_value) in enumerate(validation_artifacts):
+            artifacts = {}
+            for ii, (artifact_type, artifact_value) in enumerate(validation_artifacts):
                 artifacts.update(
                     {
-                        f"artifact_{i}": {
+                        f"artifact_{ii}": {
                             "type": artifact_type,
                             "value": artifact_value,
                         }
@@ -270,13 +270,19 @@ class DiffusionTrainer(BaseTrainer):
             for key, value in list(artifacts.items()):
                 artifact_type = value["type"]
                 artifact_value = value["value"]
-                if artifact_type not in ["image", "video"] or artifact_value is None:
+                if artifact_type not in ["text", "image", "video"] or artifact_value is None:
                     continue
 
-                extension = "png" if artifact_type == "image" else "mp4"
-                filename = f"validation-{step}-{prompt_filename}-{hash_suffix}.{extension}"
-                validation_path = self.args.output_dir / "validation_res"
+                match artifact_type:
+                    case "text":
+                        extension = "txt"
+                    case "image":
+                        extension = "png"
+                    case "video":
+                        extension = "mp4"
+                validation_path = self.args.output_dir / "validation_res" / f"validation-{step}"
                 validation_path.mkdir(parents=True, exist_ok=True)
+                filename = f"artifact-process{accelerator.process_index}-batch{i}.{extension}"
                 filename = str(validation_path / filename)
 
                 if artifact_type == "image":
@@ -286,7 +292,12 @@ class DiffusionTrainer(BaseTrainer):
                 elif artifact_type == "video":
                     self.logger.debug(f"Saving video to {filename}")
                     export_to_video(artifact_value, filename, fps=self.args.gen_fps)
-                    artifact_value = wandb.Video(filename, caption=prompt)
+                    artifact_value = wandb.Video(filename)
+                elif artifact_type == "text":
+                    self.logger.debug(f"Saving text to {filename}")
+                    with open(filename, "w") as f:
+                        f.write(artifact_value)
+                    artifact_value = str(artifact_value)
 
                 all_processes_artifacts.append(artifact_value)
 
@@ -296,6 +307,9 @@ class DiffusionTrainer(BaseTrainer):
             tracker_key = "validation"
             for tracker in accelerator.trackers:
                 if tracker.name == "wandb":
+                    text_artifacts = [
+                        artifact for artifact in all_artifacts if isinstance(artifact, str)
+                    ]
                     image_artifacts = [
                         artifact for artifact in all_artifacts if isinstance(artifact, wandb.Image)
                     ]
@@ -305,6 +319,7 @@ class DiffusionTrainer(BaseTrainer):
                     tracker.log(
                         {
                             tracker_key: {
+                                "texts": text_artifacts,
                                 "images": image_artifacts,
                                 "videos": video_artifacts,
                             },

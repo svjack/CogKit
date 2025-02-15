@@ -14,7 +14,7 @@ class BaseArgs(BaseModel):
     training_type: Literal["lora", "sft"] = "lora"
 
     ########## Output ##########
-    output_dir: Path = Path(f"train_results/{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}")
+    output_dir: Path = Path(f"train_result/{datetime.datetime.now():%Y-%m-%d-%H-%M-%S}")
     report_to: Literal["tensorboard", "wandb", "all"] | None = None
     tracker_name: str = "base-tracker"
 
@@ -61,17 +61,8 @@ class BaseArgs(BaseModel):
     target_modules: list[str] = ["to_q", "to_k", "to_v", "to_out.0"]
 
     ########## Validation ##########
-    validation_dir: Path | None  # if set do_validation, should not be None
     do_validation: bool = False
     validation_steps: int | None  # if set, should be a multiple of checkpointing_steps
-
-    @field_validator("validation_dir")
-    def validate_validation_required_fields(cls, v: Any, info: ValidationInfo) -> Any:
-        values = info.data
-        if values.get("do_validation") and not v:
-            field_name = info.field_name
-            raise ValueError(f"{field_name} must be specified when do_validation is True")
-        return v
 
     @field_validator("validation_steps")
     def validate_validation_steps(cls, v: int | None, info: ValidationInfo) -> int | None:
@@ -106,7 +97,7 @@ class BaseArgs(BaseModel):
 
         # Training hyperparameters
         parser.add_argument("--seed", type=int, default=42)
-        parser.add_argument("--train_epochs", type=int, default=10)
+        parser.add_argument("--train_epochs", type=int, default=1)
         parser.add_argument("--train_steps", type=int, default=None)
         parser.add_argument("--gradient_accumulation_steps", type=int, default=1)
         parser.add_argument("--batch_size", type=int, default=1)

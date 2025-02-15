@@ -1,6 +1,4 @@
-import logging
-from pathlib import Path
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import ValidationInfo, field_validator
 from typing_extensions import override
@@ -15,11 +13,6 @@ class DiffusionArgs(BaseArgs):
     ########## Output ##########
     tracker_name: str = "diffusion-tracker"
 
-    ########## Data Path ###########
-    caption_column: Path
-    image_column: Path | None = None
-    video_column: Path
-
     ########## Training #########
     # For cogview models, train_resolution is a tuple of (height, width)
     # For cogvideo models, train_resolution is a tuple of (frames, height, width)
@@ -29,45 +22,7 @@ class DiffusionArgs(BaseArgs):
     enable_tiling: bool = True
 
     ########## Validation ##########
-    validation_prompts: str | None  # if set do_validation, should not be None
-    validation_images: str | None  # if set do_validation and model_type == i2v, should not be None
-    validation_videos: str | None  # if set do_validation and model_type == v2v, should not be None
     gen_fps: int = 15
-
-    @field_validator("image_column")
-    def validate_image_column(cls, v: str | None, info: ValidationInfo) -> str | None:
-        values = info.data
-        if values.get("model_type") == "i2v" and not v:
-            logging.warning(
-                "No `image_column` specified for i2v model. Will automatically extract first frames from videos as conditioning images."
-            )
-        return v
-
-    @field_validator("validation_prompts")
-    def validate_validation_required_fields(cls, v: Any, info: ValidationInfo) -> Any:
-        values = info.data
-        if values.get("do_validation") and not v:
-            field_name = info.field_name
-            raise ValueError(f"{field_name} must be specified when do_validation is True")
-        return v
-
-    @field_validator("validation_images")
-    def validate_validation_images(cls, v: str | None, info: ValidationInfo) -> str | None:
-        values = info.data
-        if values.get("do_validation") and values.get("model_type") == "i2v" and not v:
-            raise ValueError(
-                "validation_images must be specified when do_validation is True and model_type is i2v"
-            )
-        return v
-
-    @field_validator("validation_videos")
-    def validate_validation_videos(cls, v: str | None, info: ValidationInfo) -> str | None:
-        values = info.data
-        if values.get("do_validation") and values.get("model_type") == "v2v" and not v:
-            raise ValueError(
-                "validation_videos must be specified when do_validation is True and model_type is v2v"
-            )
-        return v
 
     @field_validator("train_resolution")
     def validate_train_resolution(
@@ -103,22 +58,13 @@ class DiffusionArgs(BaseArgs):
 
         # Required arguments
         parser.add_argument("--model_type", type=str, required=True)
-        parser.add_argument("--caption_column", type=str, required=True)
-        parser.add_argument("--video_column", type=str, required=True)
         parser.add_argument("--train_resolution", type=str, required=True)
-
-        # Data loading
-        parser.add_argument("--image_column", type=str, default=None)
 
         # Model configuration
         parser.add_argument("--enable_slicing", type=bool, default=True)
         parser.add_argument("--enable_tiling", type=bool, default=True)
 
         # Validation
-        parser.add_argument("--validation_dir", type=str, default=None)
-        parser.add_argument("--validation_prompts", type=str, default=None)
-        parser.add_argument("--validation_images", type=str, default=None)
-        parser.add_argument("--validation_videos", type=str, default=None)
         parser.add_argument("--gen_fps", type=int, default=15)
 
         args = parser.parse_args()
