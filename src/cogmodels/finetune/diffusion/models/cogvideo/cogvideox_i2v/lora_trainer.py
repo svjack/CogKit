@@ -251,9 +251,9 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
         )
 
         video_generate = pipe(
-            num_frames=self.state.train_frames,
-            height=self.state.train_height,
-            width=self.state.train_width,
+            num_frames=self.state.train_resolution[0],
+            height=self.state.train_resolution[1],
+            width=self.state.train_resolution[2],
             prompt_embeds=prompt_embedding,
             image=image,
             generator=self.state.generator,

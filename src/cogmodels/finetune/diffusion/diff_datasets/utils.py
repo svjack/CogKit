@@ -1,11 +1,14 @@
+import hashlib
 import logging
 from pathlib import Path
-import torchvision.transforms as transforms
+from typing import Callable
 
 import cv2
 import numpy as np
 import torch
+import torchvision.transforms as transforms
 from PIL import Image
+from safetensors.torch import load_file, save_file
 
 # Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
 # Very few bug reports but it happens. Look in decord Github issues for more relevant information.
@@ -169,3 +172,46 @@ def preprocess_video_with_resize(
         frames = frames[:max_num_frames]
 
     return frames.contiguous()
+
+
+##########  embedding & caching  ##########
+
+
+def get_prompt_embedding(
+    encode_fn: Callable, prompt: str, cache_dir: Path, logger: logging.Logger
+) -> torch.Tensor:
+    """Get prompt embedding from cache or create new one if not exists.
+
+    Args:
+        encode_fn: Function to project prompt to embedding.
+        prompt: Text prompt to be embedded
+        cache_dir: Base directory for caching embeddings
+        logger: Logger instance for logging messages
+
+    Returns:
+        torch.Tensor: Prompt embedding with shape [seq_len, hidden_size]
+    """
+    prompt_embeddings_dir = cache_dir / "prompt_embeddings"
+    prompt_embeddings_dir.mkdir(parents=True, exist_ok=True)
+
+    prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
+    prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
+
+    if prompt_embedding_path.exists():
+        prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
+        logger.debug(
+            f"Loaded prompt embedding from {prompt_embedding_path}",
+            main_process_only=False,
+        )
+    else:
+        prompt_embedding = encode_fn(prompt)
+        prompt_embedding = prompt_embedding.to("cpu")
+        # [1, seq_len, hidden_size] -> [seq_len, hidden_size]
+        prompt_embedding = prompt_embedding[0]
+        save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
+        logger.info(
+            f"Saved prompt embedding to {prompt_embedding_path}",
+            main_process_only=False,
+        )
+
+    return prompt_embedding

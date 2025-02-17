@@ -1,7 +1,7 @@
 import hashlib
 import torchvision.transforms as transforms
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Tuple
 
 import torch
 from accelerate.logging import get_logger
@@ -21,6 +21,7 @@ from .utils import (
     load_videos,
     preprocess_image_with_resize,
     preprocess_video_with_resize,
+    get_prompt_embedding,
 )
 
 if TYPE_CHECKING:
@@ -43,11 +44,9 @@ class BaseI2VDataset(Dataset):
 
     Args:
         data_root (str): Root directory containing the dataset files
-        caption_column (str): Path to file containing text prompts/captions
-        video_column (str): Path to file containing video paths
-        image_column (str): Path to file containing image paths
         device (torch.device): Device to load the data on
-        encode_video_fn (Callable[[torch.Tensor], torch.Tensor], optional): Function to encode videos
+        trainer (DiffusionTrainer): Trainer object
+        using_train (bool): Whether to use the training set
     """
 
     def __init__(
@@ -113,30 +112,11 @@ class BaseI2VDataset(Dataset):
 
         ##### prompt
         prompt = self.data[index]["prompt"]
-        prompt_embeddings_dir = cache_dir / "prompt_embeddings"
-        prompt_embeddings_dir.mkdir(parents=True, exist_ok=True)
-        prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
-        prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
-        if prompt_embedding_path.exists():
-            prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
-            logger.debug(
-                f"process {self.trainer.accelerator.process_index}: Loaded prompt embedding from {prompt_embedding_path}",
-                main_process_only=False,
-            )
-        else:
-            prompt_embedding = self.encode_text(prompt)
-            prompt_embedding = prompt_embedding.to("cpu")
-            # [1, seq_len, hidden_size] -> [seq_len, hidden_size]
-            prompt_embedding = prompt_embedding[0]
-            save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
-            logger.info(
-                f"Saved prompt embedding to {prompt_embedding_path}",
-                main_process_only=False,
-            )
+        prompt_embedding = get_prompt_embedding(self.encode_text, prompt, cache_dir, logger)
 
         ##### image
         image_preprocessed = self.data[index]["image"]
-        image_original = image_preprocessed
+        image_original: Image.Image = image_preprocessed
         _, image_preprocessed = self.preprocess(None, image_preprocessed, self.device)
         image_preprocessed = self.image_transform(image_preprocessed)
         image_preprocessed = image_preprocessed.to("cpu")
@@ -265,12 +245,13 @@ class I2VDatasetWithResize(BaseI2VDataset):
         width (int): Target width for resizing videos and images
     """
 
-    def __init__(self, max_num_frames: int, height: int, width: int, *args, **kwargs) -> None:
+    # def __init__(self, max_num_frames: int, height: int, width: int, *args, **kwargs) -> None:
+    def __init__(self, train_resolution: Tuple[int, int, int], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.max_num_frames = max_num_frames
-        self.height = height
-        self.width = width
+        self.max_num_frames = train_resolution[0]
+        self.height = train_resolution[1]
+        self.width = train_resolution[2]
 
         self.__frame_transforms = transforms.Compose(
             [transforms.Lambda(lambda x: x / 255.0 * 2.0 - 1.0)]

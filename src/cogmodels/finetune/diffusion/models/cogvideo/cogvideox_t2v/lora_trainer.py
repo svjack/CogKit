@@ -196,9 +196,9 @@ class CogVideoXT2VLoraTrainer(DiffusionTrainer):
         prompt_embedding = eval_data["prompt_embedding"]
 
         video_generate = pipe(
-            num_frames=self.state.train_frames,
-            height=self.state.train_height,
-            width=self.state.train_width,
+            num_frames=self.state.train_resolution[0],
+            height=self.state.train_resolution[1],
+            width=self.state.train_resolution[2],
             prompt_embeds=prompt_embedding,
             generator=self.state.generator,
         ).frames[0]

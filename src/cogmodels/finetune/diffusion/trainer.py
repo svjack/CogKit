@@ -45,22 +45,10 @@ class DiffusionTrainer(BaseTrainer):
 
     @override
     def _init_state(self) -> DiffusionState:
-        # TODO: refactor later
-        if self.args.model_type == "i2v" or self.args.model_type == "t2v":
-            return DiffusionState(
-                weight_dtype=self.get_training_dtype(),
-                train_frames=self.args.train_resolution[0],
-                train_height=self.args.train_resolution[1],
-                train_width=self.args.train_resolution[2],
-            )
-        elif self.args.model_type == "t2i":
-            return DiffusionState(
-                weight_dtype=self.get_training_dtype(),
-                train_height=self.args.train_resolution[0],
-                train_width=self.args.train_resolution[1],
-            )
-        else:
-            raise ValueError(f"Invalid model type: {self.args.model_type}")
+        return DiffusionState(
+            weight_dtype=self.get_training_dtype(),
+            train_resolution=self.args.train_resolution,
+        )
 
     @override
     def prepare_models(self) -> None:
@@ -75,51 +63,32 @@ class DiffusionTrainer(BaseTrainer):
     @override
     def prepare_dataset(self) -> None:
         # TODO: refactor later
-        if self.args.model_type == "i2v":
-            additional_args = {
-                "device": self.accelerator.device,
-                "max_num_frames": self.state.train_frames,
-                "height": self.state.train_height,
-                "width": self.state.train_width,
-                "trainer": self,
-            }
-            self.train_dataset = I2VDatasetWithResize(
+        match self.args.model_type:
+            case "i2v":
+                dataset_cls = I2VDatasetWithResize
+            case "t2v":
+                dataset_cls = T2VDatasetWithResize
+            case "t2i":
+                ...
+            case _:
+                raise ValueError(f"Invalid model type: {self.args.model_type}")
+
+        additional_args = {
+            "device": self.accelerator.device,
+            "trainer": self,
+        }
+
+        self.train_dataset = dataset_cls(
+            **(self.args.model_dump()),
+            **additional_args,
+            using_train=True,
+        )
+        if self.args.do_validation:
+            self.test_dataset = dataset_cls(
                 **(self.args.model_dump()),
                 **additional_args,
-                using_train=True,
+                using_train=False,
             )
-            if self.args.do_validation:
-                self.test_dataset = I2VDatasetWithResize(
-                    **(self.args.model_dump()),
-                    **additional_args,
-                    using_train=False,
-                )
-
-        elif self.args.model_type == "t2v":
-            additional_args = {
-                "device": self.accelerator.device,
-                "max_num_frames": self.state.train_frames,
-                "height": self.state.train_height,
-                "width": self.state.train_width,
-                "trainer": self,
-            }
-            self.train_dataset = T2VDatasetWithResize(
-                **(self.args.model_dump()),
-                **additional_args,
-                using_train=True,
-            )
-            if self.args.do_validation:
-                self.test_dataset = T2VDatasetWithResize(
-                    **(self.args.model_dump()),
-                    **additional_args,
-                    using_train=False,
-                )
-
-        elif self.args.model_type == "t2i":
-            ...
-
-        else:
-            raise ValueError(f"Invalid model type: {self.args.model_type}")
 
         # Prepare VAE and text encoder for encoding
         self.components.vae.requires_grad_(False)
@@ -369,13 +338,18 @@ class DiffusionTrainer(BaseTrainer):
     def initialize_pipeline(self) -> DiffusionPipeline:
         raise NotImplementedError
 
+    def encode_text(self, text: str) -> torch.Tensor:
+        # shape of output text: [batch size, sequence length, embedding dimension]
+        raise NotImplementedError
+
+    def encode_image(self, image: torch.Tensor) -> torch.Tensor:
+        # shape of input image: [B, C, H, W], where B = 1
+        # shape of output image: [B, C', H', W'], where B = 1
+        raise NotImplementedError
+
     def encode_video(self, video: torch.Tensor) -> torch.Tensor:
         # shape of input video: [B, C, F, H, W], where B = 1
         # shape of output video: [B, C', F', H', W'], where B = 1
-        raise NotImplementedError
-
-    def encode_text(self, text: str) -> torch.Tensor:
-        # shape of output text: [batch size, sequence length, embedding dimension]
         raise NotImplementedError
 
     def validation_step(

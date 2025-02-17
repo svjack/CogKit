@@ -13,7 +13,7 @@ from typing_extensions import override
 
 from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
 
-from .utils import load_prompts, load_videos, preprocess_video_with_resize
+from .utils import load_prompts, load_videos, preprocess_video_with_resize, get_prompt_embedding
 
 if TYPE_CHECKING:
     from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
@@ -67,26 +67,8 @@ class BaseT2VDataset(Dataset):
 
         ##### prompt
         prompt = self.data[index]["prompt"]
-        prompt_embeddings_dir = cache_dir / "prompt_embeddings"
-        prompt_embeddings_dir.mkdir(parents=True, exist_ok=True)
-        prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
-        prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
-        if prompt_embedding_path.exists():
-            prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
-            logger.debug(
-                f"process {self.trainer.accelerator.process_index}: Loaded prompt embedding from {prompt_embedding_path}",
-                main_process_only=False,
-            )
-        else:
-            prompt_embedding = self.encode_text(prompt)
-            prompt_embedding = prompt_embedding.to("cpu")
-            # [1, seq_len, hidden_size] -> [seq_len, hidden_size]
-            prompt_embedding = prompt_embedding[0]
-            save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
-            logger.info(
-                f"Saved prompt embedding to {prompt_embedding_path}",
-                main_process_only=False,
-            )
+        prompt_embedding = get_prompt_embedding(self.encode_text, prompt, cache_dir, logger)
+
         if not self.using_train:
             return {
                 "prompt": prompt,
@@ -185,12 +167,12 @@ class T2VDatasetWithResize(BaseT2VDataset):
         width (int): Target width for resizing videos
     """
 
-    def __init__(self, max_num_frames: int, height: int, width: int, *args, **kwargs) -> None:
+    def __init__(self, train_resolution: tuple[int, int, int], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.max_num_frames = max_num_frames
-        self.height = height
-        self.width = width
+        self.max_num_frames = train_resolution[0]
+        self.height = train_resolution[1]
+        self.width = train_resolution[2]
 
         self.__frame_transform = transforms.Compose(
             [transforms.Lambda(lambda x: x / 255.0 * 2.0 - 1.0)]
