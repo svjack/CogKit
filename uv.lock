@@ -274,7 +274,7 @@ requires-dist = [
     { name = "datasets", specifier = ">=3.2.0" },
     { name = "decord", specifier = ">=0.6.0" },
     { name = "deepspeed", specifier = ">=0.16.3" },
-    { name = "diffusers", specifier = ">=0.32.2" },
+    { name = "diffusers", git = "https://github.com/huggingface/diffusers" },
     { name = "imageio", specifier = ">=2.37.0" },
     { name = "imageio-ffmpeg", specifier = ">=0.6.0" },
     { name = "opencv-python", specifier = ">=4.11.0.86" },
@@ -362,8 +362,8 @@ wheels = [
 
 [[package]]
 name = "diffusers"
-version = "0.32.2"
-source = { registry = "https://pypi.org/simple" }
+version = "0.33.0.dev0"
+source = { git = "https://github.com/huggingface/diffusers#3579cd2bb7d2e8f8fa97b198a513f4e02ecccfc1" }
 dependencies = [
     { name = "filelock" },
     { name = "huggingface-hub" },
@@ -373,10 +373,6 @@ dependencies = [
     { name = "regex" },
     { name = "requests" },
     { name = "safetensors" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ee/72/d3f715e71a77f14a48f1ac081cea5bb6c6e6cd41c55b1291f401b1504679/diffusers-0.32.2.tar.gz", hash = "sha256:eb1e36b326aabb0675729af7c626caf7a76ce7ced3a126e879331790b1eaa230", size = 2614622 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/c9/2b2e822d871b06605363e52555be5d7ff0996f4eeaf0f7e5fda15adedfbe/diffusers-0.32.2-py3-none-any.whl", hash = "sha256:d7f182b49c7f428737ee3bf6397d463ec03b85f4f3b2c9470bd1d73292b609ff", size = 3226075 },
 ]
 
 [[package]]
