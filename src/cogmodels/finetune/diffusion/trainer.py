@@ -22,7 +22,7 @@ from ..utils import (
     unload_model,
 )
 from .constants import LOG_LEVEL, LOG_NAME
-from .diff_datasets import I2VDatasetWithResize, T2VDatasetWithResize
+from .diff_datasets import I2VDatasetWithResize, T2VDatasetWithResize, T2IDatasetWithResize
 from .diff_datasets.utils import (
     load_images,
     load_prompts,
@@ -69,7 +69,7 @@ class DiffusionTrainer(BaseTrainer):
             case "t2v":
                 dataset_cls = T2VDatasetWithResize
             case "t2i":
-                ...
+                dataset_cls = T2IDatasetWithResize
             case _:
                 raise ValueError(f"Invalid model type: {self.args.model_type}")
 
@@ -183,14 +183,17 @@ class DiffusionTrainer(BaseTrainer):
 
         all_processes_artifacts = []
         for i, batch in enumerate(self.test_data_loader):
-            assert i == 0  # only batch size = 0 is currently supported
-            prompt = batch.get("prompt", [None])[0]
+            # only batch size = 1 is currently supported
+            prompt = batch.get("prompt", [])
+            prompt = prompt[0] if prompt else prompt
             prompt_embedding = batch.get("prompt_embedding", None)
 
-            image = batch.get("image", [None])[0]
+            image = batch.get("image", [])
+            image = image[0] if image else image
             encoded_image = batch.get("encoded_image", None)
 
-            video = batch.get("video", [None])[0]
+            video = batch.get("video", [])
+            video = video[0] if video else video
             encoded_video = batch.get("encoded_video", None)
 
             self.logger.debug(

@@ -69,8 +69,13 @@ class DiffusionArgs(BaseArgs):
 
         args = parser.parse_args()
 
-        # Convert video_resolution_buckets string to list of tuples
-        frames, height, width = args.train_resolution.split("x")
-        args.train_resolution = (int(frames), int(height), int(width))
+        # Convert train_resolution string to tuple
+        parts = args.train_resolution.split("x")
+        if len(parts) == 2:
+            height, width = parts
+            args.train_resolution = (int(height), int(width))
+        else:
+            frames, height, width = parts
+            args.train_resolution = (int(frames), int(height), int(width))
 
         return cls(**vars(args))
