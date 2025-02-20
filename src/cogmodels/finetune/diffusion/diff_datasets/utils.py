@@ -93,16 +93,12 @@ def preprocess_image_with_resize(
             C = number of channels (3 for RGB)
             H = height
             W = width
+
+    Note: The value of returned image tensor should be in the range of 0 ~ 255(rather than 0 ~ 1).
     """
     image = image.convert("RGB")
-    transform = transforms.ToTensor()
-    image = transform(image).float().contiguous()
-    image = torch.nn.functional.interpolate(
-        image.unsqueeze(0),
-        size=(height, width),
-        mode="bilinear",
-        align_corners=False,
-    ).squeeze(0)
+    image = image.resize((width, height), Image.Resampling.BILINEAR)
+    image = torch.from_numpy(np.array(image)).permute(2, 0, 1).float().contiguous()
 
     assert image.shape == (3, height, width)
     return image
@@ -205,9 +201,8 @@ def get_prompt_embedding(
         )
     else:
         prompt_embedding = encode_fn(prompt)
+        # shape of prompt_embedding: [seq_len, hidden_size]
         prompt_embedding = prompt_embedding.to("cpu")
-        # [1, seq_len, hidden_size] -> [seq_len, hidden_size]
-        prompt_embedding = prompt_embedding[0]
         save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
         logger.info(
             f"Saved prompt embedding to {prompt_embedding_path}",
@@ -215,3 +210,44 @@ def get_prompt_embedding(
         )
 
     return prompt_embedding
+
+
+def get_image_embedding(
+    encode_fn: Callable, image: Image.Image, cache_dir: Path, logger: logging.Logger
+) -> torch.Tensor:
+    """Get encoded image from cache or create new one if not exists.
+
+    Args:
+        encode_fn: Function to project image to embedding.
+        image: Image to be embedded
+        cache_dir: Base directory for caching embeddings
+        logger: Logger instance for logging messages
+
+    Returns:
+        torch.Tensor: Encoded image with shape [C, H, W]
+    """
+    encoded_images_dir = cache_dir / "encoded_images"
+    encoded_images_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = Path(image.filename).stem
+    filename_hash = str(hashlib.sha256(filename.encode()).hexdigest())
+    encoded_image_path = encoded_images_dir / (filename_hash + ".safetensors")
+
+    if encoded_image_path.exists():
+        encoded_image = load_file(encoded_image_path)["encoded_image"]
+        logger.debug(
+            f"Loaded encoded image from {encoded_image_path}",
+            main_process_only=False,
+        )
+    else:
+        encoded_image = encode_fn(image)
+        encoded_image = encoded_image.to("cpu")
+
+        # shape of encoded_image: [C, H, W]
+        save_file({"encoded_image": encoded_image}, encoded_image_path)
+        logger.info(
+            f"Saved encoded image to {encoded_image_path}",
+            main_process_only=False,
+        )
+
+    return encoded_image
