@@ -249,3 +249,5 @@ src/cogmodels/_version.py
 
 **/*foo*
 **/train_result
+
+**/uv.lock
