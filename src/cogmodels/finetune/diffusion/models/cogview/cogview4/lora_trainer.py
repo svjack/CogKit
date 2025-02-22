@@ -178,8 +178,7 @@ class Cogview4Trainer(DiffusionTrainer):
         """
         scale_factor = self.components.scheduler.sigmas[timestep]
         model_input = latent * (1 - scale_factor) + noise * scale_factor
-        # model_label = noise - latent
-        model_label = noise
+        model_label = noise - latent
         return model_input, model_label
 
     @override
