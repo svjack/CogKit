@@ -212,18 +212,6 @@ class DiffusionTrainer(BaseTrainer):
                 pipe,
             )
 
-            # if (
-            #     self.state.using_deepspeed
-            #     and self.accelerator.deepspeed_plugin.zero_stage == 3
-            #     and not accelerator.is_main_process
-            # ):
-            #     continue
-
-            # prompt_filename = string_to_filename(prompt)[:25]
-            # # Calculate hash of reversed prompt as a unique identifier
-            # reversed_prompt = prompt[::-1]
-            # hash_suffix = hashlib.md5(reversed_prompt.encode()).hexdigest()[:5]
-
             artifacts = {}
             for ii, (artifact_type, artifact_value) in enumerate(validation_artifacts):
                 artifacts.update(
