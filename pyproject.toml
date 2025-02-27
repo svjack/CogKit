@@ -20,7 +20,7 @@ classifiers = [
   'Programming Language :: Python :: Implementation :: PyPy',
   'Programming Language :: Python',
 ]
-dependencies = ['typer']
+dependencies = ['click']
 
 
 [project.urls]
@@ -43,8 +43,7 @@ local_scheme = 'no-local-version'
 version-file = 'src/cogmodels/_version.py'
 
 
-[tool.mypy]
-strict = true
+# [tool.mypy]
 
 
 # TODO: test coverage

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from cogmodels.cli import app
+from cogmodels.cli import cli
 
-if __name__ == '__main__':
-    app()
+if __name__ == "__main__":
+    cli()

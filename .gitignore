@@ -201,3 +201,4 @@ pyrightconfig.json
 
 
 src/cogmodels/_version.py
+tmp/
