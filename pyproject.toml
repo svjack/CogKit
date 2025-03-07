@@ -2,6 +2,7 @@
 requires = ['hatch-vcs>=0.3.0', 'hatchling>=1.24.2,<1.25']
 build-backend = 'hatchling.build'
 
+
 [project]
 name = 'cogmodels'
 dynamic = ['version']
@@ -21,25 +22,24 @@ classifiers = [
   'Programming Language :: Python',
 ]
 dependencies = [
-    "accelerate>=1.3.0",
-    "datasets>=3.2.0",
-    "decord>=0.6.0",
-    "deepspeed>=0.16.3",
-    "diffusers>=0.32.2",
-    "imageio>=2.37.0",
-    "imageio-ffmpeg>=0.6.0",
-    "opencv-python>=4.11.0.86",
-    "peft>=0.14.0",
-    "pydantic>=2.10.6",
-    "sentencepiece>=0.2.0",
-    "setuptools>=75.8.0",
-    "torch>=2.6.0",
-    "torchvision>=0.21.0",
-    "transformers>=4.48.3",
-    'typer',
-    "wandb>=0.19.6",
+  "accelerate~=1.3",
+  "click~=8.1",
+  "datasets~=3.2",
+  "deepspeed~=0.16.3",
+  "diffusers~=0.32.2",
+  "imageio-ffmpeg~=0.6.0",
+  "imageio~=2.37",
+  "peft~=0.14.0",
+  "pydantic~=2.10",
+  "sentencepiece~=0.2.0",
+  # "setuptools>=75.8.0",
+  "transformers~=4.48",
+  "wandb~=0.19.6",
 ]
 
+[project.optional-dependencies]
+torch = ["numpy", "torch", "torchvision"]
+video = ["decord~=0.6.0", "opencv-python-headless~=4.11"]
 
 [project.urls]
 # TODO: adds project urls
@@ -73,15 +73,15 @@ quote-style = 'preserve'
 [tool.ruff.lint]
 select = ["E", "W"]
 ignore = [
-    "E999",
-    "EXE001",
-    "UP009",
-    "F401",
-    "TID252",
-    "F403",
-    "F841",
-    "E501",
-    "W293",
+  "E501",
+  "E999",
+  "EXE001",
+  "F401",
+  "F403",
+  "F841",
+  "TID252",
+  "UP009",
+  "W293",
 ]
 
 [tool.uv.sources]
