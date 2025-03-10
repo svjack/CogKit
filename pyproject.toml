@@ -25,7 +25,7 @@ dependencies = [
     "datasets>=3.2.0",
     "decord>=0.6.0",
     "deepspeed>=0.16.3",
-    "diffusers>=0.32.2",
+    "diffusers @ git+https://github.com/zRzRzRzRzRzRzR/diffusers@cogview4_control",
     "imageio>=2.37.0",
     "imageio-ffmpeg>=0.6.0",
     "opencv-python>=4.11.0.86",
@@ -59,6 +59,10 @@ local_scheme = 'no-local-version'
 
 [tool.hatch.build.hooks.vcs]
 version-file = 'src/cogmodels/_version.py'
+
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 
 [tool.ruff]
