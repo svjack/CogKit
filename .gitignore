@@ -251,3 +251,6 @@ src/cogmodels/_version.py
 **/train_result
 
 **/uv.lock
+
+webdoc/
+**/wandb/
