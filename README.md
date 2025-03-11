@@ -2,7 +2,7 @@
 
 ## Updates
 
-- 2025-mm-DD, release and open source cogmodel. 
+- 2025-mm-DD, release and open source cogmodel.
 
 ## Introduction
 
@@ -17,7 +17,7 @@
 - Extreme reasoning: based on OpenAI style API, browser interface and command line interface.
 
 ## Supported Models
-### CogVideo series models 
+### CogVideo series models
 
 repo: https://github.com/THUDM/CogVideo
 
@@ -29,7 +29,7 @@ repo: https://github.com/THUDM/CogVideo
 | CogVideoX1.5-5B-I2V (Latest) | image-to-video | bfloat16<br>float16 | Min(W, H) = 768 <br> 768 ≤ Max(W, H) ≤ 1360 <br> Max(W, H) \mod 16 = 0 | 🤗 [HuggingFace](https://huggingface.co/THUDM/CogVideoX1.5-5B-I2V) <br> 🤖 [ModelScope](https://modelscope.cn/models/ZhipuAI/CogVideoX1.5-5B-I2V) <br> 🟣 [WiseModel](https://wisemodel.cn/models/ZhipuAI/CogVideoX1.5-5B-I2V) |
 | CogVideoX1.5-5B (Latest) | text-to-image <br> video-to-video | bfloat16<br>float16 | 1360 * 768 | 🤗 [HuggingFace](https://huggingface.co/THUDM/CogVideoX1.5-5B) <br> 🤖 [ModelScope](https://modelscope.cn/models/ZhipuAI/CogVideoX1.5-5B) <br> 🟣 [[WiseModel](https://wisemodel.cn/models/ZhipuAI/CogVideoX1.5-5B)] |
 
-### CogView series models 
+### CogView series models
 
 repo: https://github.com/THUDM/CogView4
 

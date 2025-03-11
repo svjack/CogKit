@@ -130,9 +130,7 @@ class UsageInfo(BaseModel):
 class ChatCompletionResponse(BaseModel):
     model: str
     object: Literal["chat.completion", "chat.completion.chunk"]
-    choices: list[
-        ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice
-    ]
+    choices: list[ChatCompletionResponseChoice | ChatCompletionResponseStreamChoice]
     created: int = Field(default_factory=lambda: int(time.time()))
     usage: UsageInfo = None
 
@@ -156,15 +154,15 @@ async def create_image_completion(request: ChatCompletionRequest):
     if len(request.messages) < 1 or request.messages[-1].role == "assistant":
         raise HTTPException(status_code=400, detail="Invalid request")
     messages = request.messages
-    history =  process_history(messages)
+    history = process_history(messages)
     response = generate_image(
-            prompt=history,
-            guidance_scale=3.5,
-            num_images_per_prompt=1,
-            num_inference_steps=50,
-            width=1024,
-            height=1024,
-        )
+        prompt=history,
+        guidance_scale=3.5,
+        num_images_per_prompt=1,
+        num_inference_steps=50,
+        width=1024,
+        height=1024,
+    )
 
     usage = UsageInfo()
     message = ChatMessageResponse(role="assistant", content=response["image"])
@@ -181,19 +179,15 @@ async def create_image_completion(request: ChatCompletionRequest):
         usage=usage,
     )
 
-def process_history(
-        messages: list[ChatMessageInput]
-    ) -> str:
 
+def process_history(messages: list[ChatMessageInput]) -> str:
     text_content = ""
     for message in messages:
         content = message.content
 
         # Extract text content
         if isinstance(content, list):
-            extracted_texts = [
-                item.text for item in content if isinstance(item, TextContent)
-            ]
+            extracted_texts = [item.text for item in content if isinstance(item, TextContent)]
             text_content = " ".join(extracted_texts)
 
         else:
@@ -201,11 +195,13 @@ def process_history(
             text_content = content
     return text_content
 
+
 def encode_image(image_path):
     # Encodes an Image into a base64 string.
     with open(image_path, "rb") as image_file:
-        img_base64 =  base64.b64encode(image_file.read()).decode("utf-8")
+        img_base64 = base64.b64encode(image_file.read()).decode("utf-8")
     return f"data:image/jpeg;base64,{img_base64}"
+
 
 def generate_image(
     prompt,
@@ -238,7 +234,6 @@ def generate_image(
     }
 
 
-
 # Clean up GPU memory if possible
 gc.collect()
 torch.cuda.empty_cache()
@@ -246,22 +241,15 @@ torch.cuda.empty_cache()
 if __name__ == "__main__":
     # Use argparse to control model_path, host, and port from command line arguments
     parser = argparse.ArgumentParser(description="OpenAI Server Demo for CogView4")
-    parser.add_argument(
-        "--model_path", required=True, help="Path or name of the CogView4 model"
-    )
+    parser.add_argument("--model_path", required=True, help="Path or name of the CogView4 model")
     parser.add_argument("--host", default="0.0.0.0", help="Host to run the server on")
-    parser.add_argument(
-        "--port", type=int, default=8000, help="Port to run the server on"
-    )
+    parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
     args = parser.parse_args()
 
     model_dir = Path(args.model_path).expanduser().resolve()
 
     # Load the pre-trained model with the specified precision
-    pipe = CogView4Pipeline.from_pretrained(
-        model_dir,
-        torch_dtype=torch.bfloat16
-    )
+    pipe = CogView4Pipeline.from_pretrained(model_dir, torch_dtype=torch.bfloat16)
 
     # Enable CPU offloading to free up GPU memory when layers are not actively being used
     pipe.enable_model_cpu_offload()

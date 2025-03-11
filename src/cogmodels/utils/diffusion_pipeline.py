@@ -23,9 +23,7 @@ def _get_config_file(model_id_or_path: str) -> Path:
         return resolve_path(model_id_or_path) / DiffusionPipeline.config_name
 
     return resolve_path(
-        hf_hub_download(
-            model_id_or_path, DiffusionPipeline.config_name, force_download=True
-        )
+        hf_hub_download(model_id_or_path, DiffusionPipeline.config_name, force_download=True)
     )
 
 

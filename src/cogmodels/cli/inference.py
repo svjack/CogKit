@@ -35,9 +35,7 @@ from cogmodels.utils import cast_to_torch_dtype, guess_generation_mode
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
     help="the video to guide the video generation (NOT EFFECTIVE in the image generation task)",
 )
-@click.option(
-    "--lora_model_id_or_path", help="the id or the path of the LoRA weights"
-)
+@click.option("--lora_model_id_or_path", help="the id or the path of the LoRA weights")
 @click.option(
     "--lora_rank",
     type=click.IntRange(min=1),

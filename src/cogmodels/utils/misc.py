@@ -51,9 +51,7 @@ def guess_generation_mode(
     valid_vid_file = _validate_file(video_file)
 
     if valid_img_file is not None and valid_vid_file is not None:
-        _logger.warning(
-            "Both image and video input are received. Will ignore the video."
-        )
+        _logger.warning("Both image and video input are received. Will ignore the video.")
         valid_vid_file = None
 
     if valid_img_file is not None:

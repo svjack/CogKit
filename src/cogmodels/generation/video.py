@@ -58,9 +58,7 @@ def generate_video(
     guidance_scale: float = 6.0,
     seed: int | None = 42,
 ) -> None:
-    pipeline = DiffusionPipeline.from_pretrained(
-        model_id_or_path, torch_dtype=dtype
-    )
+    pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
 
     height, width = guess_resolution(pipeline, height, width)
     if lora_model_id_or_path is not None:
@@ -92,8 +90,6 @@ def generate_video(
 
     save_file = resolve_path(save_file)
     mkdir(save_file.parent)
-    _logger.info(
-        "Saving the generated video to path '%s'.", os.fspath(save_file)
-    )
+    _logger.info("Saving the generated video to path '%s'.", os.fspath(save_file))
     batch_video = _cast_to_pipeline_output(pipeline_out).frames
     export_to_video(batch_video[0], save_file, fps=fps)

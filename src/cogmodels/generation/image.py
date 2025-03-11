@@ -29,9 +29,7 @@ def generate_image(
     guidance_scale: float = 3.5,
     seed: int | None = 42,
 ):
-    pipeline = DiffusionPipeline.from_pretrained(
-        model_id_or_path, torch_dtype=dtype
-    )
+    pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
 
     height, width = guess_image_resolution(pipeline, height, width)
 
@@ -49,7 +47,5 @@ def generate_image(
 
     save_file = resolve_path(save_file)
     mkdir(save_file.parent)
-    _logger.info(
-        "Saving the generated image to path '%s'.", os.fspath(save_file)
-    )
+    _logger.info("Saving the generated image to path '%s'.", os.fspath(save_file))
     batch_image[0].save(save_file)
