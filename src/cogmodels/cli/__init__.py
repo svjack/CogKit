@@ -2,43 +2,40 @@
 
 
 import logging
-from typing import Annotated
+import time
 
-import typer
+import click
 
-from cogmodels.cli.demo import demo
 from cogmodels.cli.finetune import finetune
 from cogmodels.cli.inference import inference
+from cogmodels.cli.launch import launch
+from cogmodels.logging import LOG_FORMAT, get_logger, set_log_level
 
-_logger = logging.getLogger(__name__)
-app = typer.Typer(pretty_exceptions_show_locals=False)
-
-
-@app.callback()
-def main(
-    *,
-    verbose: Annotated[
-        bool, typer.Option('--verbose', '-v', help='enables verbose mode')
-    ] = False,
-    debug: Annotated[
-        bool, typer.Option('--debug', help='enables debug mode')
-    ] = False,
-) -> None:
-    logging.basicConfig(
-        format='%(asctime)s [%(levelname)s][%(filename)s:%(lineno)d] %(message)s'
-    )
-    log_level = logging.WARNING
-    if verbose:
-        log_level = logging.INFO
-        if debug:
-            _logger.warning(
-                'No need to enable verbose mode since debug mode is enabled.'
-            )
-    elif debug:
-        log_level = logging.DEBUG
-    logging.root.setLevel(log_level)
+__all__ = ["cli"]
+_logger = get_logger(__name__)
 
 
-app.command()(demo)
-app.command()(finetune)
-app.command()(inference)
+@click.group()
+@click.option(
+    "-v",
+    "--verbose",
+    default=0,
+    type=click.IntRange(min=0, max=2),
+    count=True,
+    show_default=True,
+    help="Verbosity level (from 0 to 2)",
+)
+@click.pass_context
+def cli(ctx: click.Context, verbose: int) -> None:
+    start = time.perf_counter()
+    logging.basicConfig(format=LOG_FORMAT, level=set_log_level(verbose))
+
+    @ctx.call_on_close
+    def _log_running_time():
+        end = time.perf_counter()
+        _logger.info("Running time: %.3f seconds.", end - start)
+
+
+cli.add_command(inference)
+cli.add_command(launch)
+cli.add_command(finetune)

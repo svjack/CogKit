@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-def demo() -> None:
+import click
+
+
+@click.command()
+def launch() -> None:
     raise NotImplementedError
