@@ -6,32 +6,38 @@ export TOKENIZERS_PARALLELISM=false
 # Model Configuration
 MODEL_ARGS=(
     --model_path "THUDM/CogVideoX1.5-5B-I2V"
-    --model_name "cogvideox1.5-i2v"  # ["cogvideox-i2v"]
+    --model_name "cogvideox1.5-i2v"  # candidate: ["cogvideox-i2v", "cogvideox1.5-i2v"]
     --model_type "i2v"
     --training_type "sft"
 )
 
 # Output Configuration
 OUTPUT_ARGS=(
-    --output_dir "/home/lhy/code/cogmodels/src/cogmodels/finetune/diffusion/train_result"
+    --output_dir "/path/to/output"
     --report_to "tensorboard"
 )
 
 # Data Configuration
 DATA_ARGS=(
-    --data_root "/home/lhy/code/cogmodels/src/cogmodels/finetune/data/i2v-noimg"
-    --train_resolution "81x768x1360"  # (frames x height x width), frames should be 8N+1 and height, width should be multiples of 16
+    --data_root "/path/to/data"
+
+    # Note:
+    #  for CogVideoX series models, number of training frames should be **8N+1**
+    #  for CogVideoX1.5 series models, number of training frames should be **16N+1**
+    --train_resolution "81x768x1360"  # (frames x height x width)
 )
 
 # Training Configuration
 TRAIN_ARGS=(
-    --train_epochs 1 # number of training epochs
-    --seed 42 # random seed
+    --seed 42  # random seed
+    --train_epochs 1  # number of training epochs
+
+    --learning_rate 2e-5
 
     #########   Please keep consistent with deepspeed config file ##########
     --batch_size 1
     --gradient_accumulation_steps 1
-    --mixed_precision "bf16"  # ["no", "fp16"] Only CogVideoX-2B supports fp16 training
+    --mixed_precision "bf16"  # ["no", "fp16"]  Note: CogVideoX-2B only supports fp16 training
     ########################################################################
 )
 
@@ -46,12 +52,12 @@ SYSTEM_ARGS=(
 CHECKPOINT_ARGS=(
     --checkpointing_steps 10 # save checkpoint every x steps
     --checkpointing_limit 2 # maximum number of checkpoints to keep, after which the oldest one is deleted
-    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint, otherwise, comment this line
+    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint
 )
 
 # Validation Configuration
 VALIDATION_ARGS=(
-    --do_validation true  # ["true", "false"]
+    --do_validation true   # ["true", "false"]
     --validation_steps 10  # should be multiple of checkpointing_steps
     --gen_fps 16
 )

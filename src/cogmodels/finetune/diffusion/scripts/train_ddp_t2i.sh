@@ -6,33 +6,35 @@ export TOKENIZERS_PARALLELISM=false
 
 # Model Configuration
 MODEL_ARGS=(
-    --model_path "/home/lhy/code/cogmodels/CogView4-6B"
-    --model_name "cogview4-6b"
+    --model_path "THUDM/CogView4-6B"
+    --model_name "cogview4-6b"  # candidate: ["cogview4-6b"]
     --model_type "t2i"
     --training_type "lora"
 )
 
 # Output Configuration
 OUTPUT_ARGS=(
-    --output_dir "/home/lhy/code/cogmodels/src/cogmodels/finetune/diffusion/train_result/cogview4/lora"
+    --output_dir "/path/to/output"
     --report_to "tensorboard"
 )
 
 # Data Configuration
 DATA_ARGS=(
-    --data_root "/home/lhy/code/cogmodels/src/cogmodels/finetune/data/t2i"
+    --data_root "/path/to/data"
+
+    # Note:
+    #   For CogView4 series models, height and width should be **32N** (multiple of 32)
     --train_resolution "1024x1024"  # (height x width)
 )
 
 # Training Configuration
 TRAIN_ARGS=(
-    # --train_epochs 1 # number of training epochs
-    --train_epochs 100 # number of training epochs
-    --seed 42 # random seed
-    # --batch_size 1
-    --batch_size 3
+    --seed 42  # random seed
+    --train_epochs 1  # number of training epochs
+    --batch_size 1
     --gradient_accumulation_steps 1
-    --mixed_precision "bf16"  # ["no", "fp16"] # Only CogVideoX-2B supports fp16 training
+    --mixed_precision "bf16"  # ["no", "fp16"]
+    --learning_rate 2e-5
 )
 
 # System Configuration
@@ -44,14 +46,14 @@ SYSTEM_ARGS=(
 
 # Checkpointing Configuration
 CHECKPOINT_ARGS=(
-    --checkpointing_steps 10 # save checkpoint every x steps
-    --checkpointing_limit 2 # maximum number of checkpoints to keep, after which the oldest one is deleted
-    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint, otherwise, comment this line
+    --checkpointing_steps 10  # save checkpoint every x steps
+    --checkpointing_limit 2   # maximum number of checkpoints to keep, after which the oldest one is deleted
+    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint
 )
 
 # Validation Configuration
 VALIDATION_ARGS=(
-    --do_validation true  # ["true", "false"]
+    --do_validation true   # ["true", "false"]
     --validation_steps 10  # should be multiple of checkpointing_steps
     --gen_fps 16
 )

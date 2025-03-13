@@ -5,40 +5,38 @@ export TOKENIZERS_PARALLELISM=false
 
 # Model Configuration
 MODEL_ARGS=(
-    --model_path "/ome/lhy/code/cogmodels/CogView4-6B"
-    --model_name "cogview4-6b"
+    --model_path "THUDM/CogView4-6B"
+    --model_name "cogview4-6b"  # candidate: ["cogview4-6b"]
     --model_type "t2i"
     --training_type "sft"
 )
 
 # Output Configuration
 OUTPUT_ARGS=(
-    --output_dir "/home/lhy/code/cogmodels/src/cogmodels/finetune/diffusion/train_result/cogview4/sft-pred-noise"
+    --output_dir "/path/to/output"
     --report_to "tensorboard"
 )
 
 # Data Configuration
 DATA_ARGS=(
-    # --data_root "/home/lhy/code/cogmodels/src/cogmodels/finetune/data/t2i"
-    --data_root "/home/lhy/code/cogmodels/src/cogmodels/finetune/data/t2i-foo"
+    --data_root "/path/to/data"
+
+    # Note:
+    #   For CogView4 series models, height and width should be **32N** (multiple of 32)
     --train_resolution "1024x1024"  # (height x width)
 )
 
 # Training Configuration
 TRAIN_ARGS=(
-    # --train_epochs 1 # number of training epochs
-    # --train_epochs 100 # number of training epochs
-    --train_epochs 10000 # number of training epochs
-    --seed 42 # random seed
+    --seed 42  # random seed
+    --train_epochs 1  # number of training epochs
 
     --learning_rate 2e-5
-    # --learning_rate 0
 
     #########   Please keep consistent with deepspeed config file ##########
-    --batch_size 2
-    # --batch_size 3
+    --batch_size 1
     --gradient_accumulation_steps 1
-    --mixed_precision "bf16"  # ["no", "fp16"] Only CogVideoX-2B supports fp16 training
+    --mixed_precision "bf16"  # ["no", "fp16"]   Note: CogVideoX-2B only supports fp16 training
     ########################################################################
 
 )
@@ -52,17 +50,15 @@ SYSTEM_ARGS=(
 
 # Checkpointing Configuration
 CHECKPOINT_ARGS=(
-    --checkpointing_steps 250 # save checkpoint every x steps
-    # --checkpointing_steps 10 # save checkpoint every x steps
-    --checkpointing_limit 1 # maximum number of checkpoints to keep, after which the oldest one is deleted
-    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint, otherwise, comment this line
+    --checkpointing_steps 10  # save checkpoint every x steps
+    --checkpointing_limit 2   # maximum number of checkpoints to keep, after which the oldest one is deleted
+    # --resume_from_checkpoint "/absolute/path/to/checkpoint_dir"  # if you want to resume from a checkpoint
 )
 
 # Validation Configuration
 VALIDATION_ARGS=(
     --do_validation true  # ["true", "false"]
-    --validation_steps 250  # should be multiple of checkpointing_steps
-    # --validation_steps 10  # should be multiple of checkpointing_steps
+    --validation_steps 10  # should be multiple of checkpointing_steps
 )
 
 # Combine all arguments and launch training
