@@ -201,7 +201,9 @@ def get_prompt_embedding(
         )
     else:
         prompt_embedding = encode_fn(prompt)
+        assert prompt_embedding.ndim == 2
         # shape of prompt_embedding: [seq_len, hidden_size]
+
         prompt_embedding = prompt_embedding.to("cpu")
         save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
         logger.info(
