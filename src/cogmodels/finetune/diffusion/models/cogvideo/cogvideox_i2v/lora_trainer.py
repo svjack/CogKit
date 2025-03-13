@@ -79,7 +79,10 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
         prompt_token_ids = prompt_token_ids.input_ids
         prompt_embedding = self.components.text_encoder(
             prompt_token_ids.to(self.accelerator.device)
-        )[0]
+        ).last_hidden_state[0]
+
+        # shape of prompt_embedding: [seq_len, hidden_size]
+        assert prompt_embedding.ndim == 2
         return prompt_embedding
 
     @override

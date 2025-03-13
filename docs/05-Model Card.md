@@ -34,8 +34,12 @@ Here is a detailed description of how CogKit supports models.
   </tr>
   <tr>
     <td style="text-align: center;">Number of Frames</td>
-    <td colspan="2" style="text-align: center;">Should be <b>16N + 1</b> where N <= 10 (default 81)</td>
-    <td colspan="3" style="text-align: center;">Should be <b>8N + 1</b> where N <= 6 (default 49)</td>
+    <td colspan="2" style="text-align: center;">Should be <b>16N + 1</b> where N ≤ 10 (default 81)</td>
+    <td colspan="3" style="text-align: center;">Should be <b>8N + 1</b> where N ≤ 6 (default 49)</td>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Prompt Language</td>
+    <td colspan="5" style="text-align: center;">English</td>
   </tr>
   <tr>
     <td style="text-align: center;">Prompt Token Limit</td>
@@ -76,7 +80,7 @@ Here is a detailed description of how CogKit supports models.
   </tr>
   <tr>
     <td style="text-align: center;">Resolution</td>
-    <td style="text-align: center;">512 ≤ (W, H) ≤ 2048 <br> H * W ≤ 2^{21} <br> Max(W, H) % 32 = 0 </td>
+    <td style="text-align: center;">512 ≤ (W, H) ≤ 2048 <br> H * W ≤ 2^{21} <br> Max(W, H) % 32 &#61 0 </td>
   </tr>
   <tr>
     <td style="text-align: center;">Prompt Language</td>
