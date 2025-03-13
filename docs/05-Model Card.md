@@ -4,7 +4,9 @@
 # Model Card
 
 
-Here is a detailed description of how CogKit supports Diffuser models.
+Here is a detailed description of how CogKit supports models.
+
+<p>All training requirements <b style="color: red;">MUST</b> be strictly followed as specified in the table below, including <b style="color: red;">Resolution</b>, <b style="color: red;">Number of Frames</b>, <b style="color: red;">Prompt Token Limit</b>, and <b style="color: red;">Video Length</b> requirements.</p>
 
 ## CogVideo
 
@@ -26,7 +28,7 @@ Here is a detailed description of how CogKit supports Diffuser models.
     <th style="text-align: center;">September 19, 2024</th>
   </tr>
   <tr>
-    <td style="text-align: center;">Video Resolution</td>
+    <td style="text-align: center;">Resolution</td>
     <td colspan="1" style="text-align: center;">1360 * 768</td>
     <td colspan="1" style="text-align: center;"> Min(W, H) = 768 <br> 768 ≤ Max(W, H) ≤ 1360 <br> Max(W, H) % 16 = 0 </td>
     <td colspan="3" style="text-align: center;">720 * 480</td>
@@ -37,9 +39,13 @@ Here is a detailed description of how CogKit supports Diffuser models.
     <td colspan="3" style="text-align: center;">Should be <b>8N + 1</b> where N <= 6 (default 49)</td>
   </tr>
   <tr>
+    <td style="text-align: center;">Prompt Language</td>
+    <td colspan="5" style="text-align: center;">English</td>
+  </tr>
+  <tr>
     <td style="text-align: center;">Prompt Token Limit</td>
-    <td colspan="2" style="text-align: center;">224 Tokens</td>
-    <td colspan="3" style="text-align: center;">226 Tokens</td>
+    <td colspan="2" style="text-align: center;">224 Tokens (T5)</td>
+    <td colspan="3" style="text-align: center;">226 Tokens (T5)</td>
   </tr>
   <tr>
     <td style="text-align: center;">Video Length</td>
@@ -75,12 +81,16 @@ Here is a detailed description of how CogKit supports Diffuser models.
     <th style="text-align: center;">March 4, 2025</th>
   </tr>
   <tr>
-    <td style="text-align: center;">Video Resolution</td>
+    <td style="text-align: center;">Resolution</td>
     <td style="text-align: center;">512 ≤ (W, H) ≤ 2048 <br> H * W ≤ 2^{21} <br> Max(W, H) % 32 = 0 </td>
   </tr>
   <tr>
+    <td style="text-align: center;">Prompt Language</td>
+    <td style="text-align: center;">English，简体中文</td>
+  </tr>
+  <tr>
     <td style="text-align: center;">Prompt Token Limit</td>
-    <td style="text-align: center;">1024 Tokens</td>
+    <td style="text-align: center;">1024 Tokens (GLM-4-9B)</td>
   </tr>
   <tr>
     <td style="text-align: center;">Download Link (Diffusers)</td>
