@@ -3,7 +3,9 @@
 
 # Model Card
 
-<!-- TODO: add model card for cogvideo and cogview -->
+Here is a detailed description of how CogKit supports models.
+
+<p>All training requirements <b style="color: red;">MUST</b> be strictly followed as specified in the table below, including <b style="color: red;">Resolution</b>, <b style="color: red;">Number of Frames</b>, <b style="color: red;">Prompt Token Limit</b>, and <b style="color: red;">Video Length</b> requirements.</p>
 
 ## CogVideo
 
@@ -62,3 +64,29 @@
 
 
 ## CogView
+
+<table style="border-collapse: collapse; width: 100%;">
+  <tr>
+    <th style="text-align: center;">Model Name</th>
+    <th style="text-align: center;">CogView4-6B (Latest)</th>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Release Date</td>
+    <th style="text-align: center;">March 4, 2025</th>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Resolution</td>
+    <td style="text-align: center;">512 ≤ (W, H) ≤ 2048 <br> H * W ≤ 2^{21} <br> Max(W, H) % 32 = 0 </td>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Prompt Language</td>
+    <td style="text-align: center;">English，简体中文</td>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Prompt Token Limit</td>
+    <td style="text-align: center;">1024 Tokens (GLM-4-9B)</td>
+  </tr>
+  <tr>
+    <td style="text-align: center;">Download Link (Diffusers)</td>
+    <td style="text-align: center;"><a href="https://huggingface.co/THUDM/CogView4-6B">🤗 HuggingFace</a><br><a href="https://modelscope.cn/models/ZhipuAI/CogView4-6B">🤖 ModelScope</a><br><a href="https://wisemodel.cn/models/ZhipuAI/CogView4-6B">🟣 WiseModel</a></td>
+</table>
