@@ -11,6 +11,7 @@ readme = 'README.md'
 requires-python = '>=3.10'
 license = 'MIT'
 keywords = []
+# FIXME: authors
 authors = [{ name = 'Chenhui Zhang', email = 'zhang.chenhui@outlook.com' }]
 classifiers = [
   'Development Status :: 4 - Beta',
@@ -26,7 +27,10 @@ dependencies = [
   "click~=8.1",
   "datasets~=3.2",
   "deepspeed~=0.16.3",
-  "diffusers~=0.32.2",
+
+  # FIXME: change diffusers source later
+  # "diffusers @ git+https://github.com/zRzRzRzRzRzRzR/diffusers.git@cogview4_control",
+
   "imageio-ffmpeg~=0.6.0",
   "imageio~=2.37",
   "peft~=0.14.0",
@@ -40,6 +44,10 @@ dependencies = [
 [project.optional-dependencies]
 torch = ["numpy", "torch", "torchvision"]
 video = ["decord~=0.6.0", "opencv-python-headless~=4.11"]
+
+[project.scripts]
+# FIXME: change name to cogkit
+cogkit = "cogmodels.cli:cli"
 
 [project.urls]
 # TODO: adds project urls
@@ -87,21 +95,3 @@ ignore = [
   "UP009",
   "W293",
 ]
-
-[tool.uv.sources]
-diffusers = { git = "https://github.com/huggingface/diffusers" }
-
-
-# TODO: test coverage
-# [tool.coverage.run]
-# source_pkgs = ['cogmodels', 'tests']
-# branch = true
-# parallel = true
-# omit = ['src/cogmodels/__about__.py']
-
-# [tool.coverage.paths]
-# cogmodels = ['*/cogmodels/src/cogmodels', 'src/cogmodels']
-# tests = ['*/cogmodels/tests', 'tests']
-
-# [tool.coverage.report]
-# exclude_lines = ['if TYPE_CHECKING:', 'if __name__ == .__main__.:', 'no cov']
