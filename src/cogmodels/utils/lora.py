@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-from diffusers import LoraBaseMixin
+from diffusers import DiffusionPipeline
 
 
 def load_lora_checkpoint(
-    pipeline: LoraBaseMixin, lora_model_id_or_path: str, lora_rank: int
+    pipeline: DiffusionPipeline, lora_model_id_or_path: str, lora_rank: int
 ) -> None:
     pipeline.load_lora_weights(
         lora_model_id_or_path,
