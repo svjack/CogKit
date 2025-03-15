@@ -9,19 +9,7 @@ from diffusers import (
     DiffusionPipeline,
 )
 
-# Recommended resolution for each model (width, height)
-# RESOLUTION_MAP = {
-#     # cogvideox1.5-*
-#     "cogvideox1.5-5b-i2v": (768, 1360),
-#     "cogvideox1.5-5b": (768, 1360),
-#     # cogvideox-*
-#     "cogvideox-5b-i2v": (480, 720),
-#     "cogvideox-5b": (480, 720),
-#     "cogvideox-2b": (480, 720),
-# }
 
-
-# FIXME: whether to keep this
 def guess_resolution(
     pipeline: DiffusionPipeline,
     height: int | None = None,
@@ -35,7 +23,6 @@ def guess_resolution(
     return (height, width)
 
 
-# FIXME: whether to keep this
 def guess_image_resolution(
     pipeline: DiffusionPipeline,
     height: int | None = None,

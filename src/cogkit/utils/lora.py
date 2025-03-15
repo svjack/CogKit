@@ -9,7 +9,6 @@ def load_lora_checkpoint(
 ) -> None:
     pipeline.load_lora_weights(
         lora_model_id_or_path,
-        # FIXME: `weight_name` & `adapter_name` is hard coded?
         weight_name="pytorch_lora_weights.safetensors",
         adapter_name="test_1",
     )

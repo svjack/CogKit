@@ -26,7 +26,6 @@ def guess_generation_mode(
 
     if pl_cls_name.startswith("CogView"):
         return GenerationMode.TextToImage
-    # FIXME: check if I2V pipeline
     if not pl_cls_name.startswith("CogVideo"):
         err_msg = f"Unknown diffusion pipeline: {pl_cls_name}"
         raise ValueError(err_msg)
