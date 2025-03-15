@@ -13,22 +13,7 @@ Cogkit is a powerful framework for working with cognitive AI models, focusing on
 
 ## Supported Models
 
-Cogkit supports a wide range of models from Hugging Face, including:
-
-<!-- FIXME: add links to the models -->
-- Stable Diffusion models for text-to-image generation
-- Stable Video Diffusion models for video generation
-- Custom fine-tuned models
-
-<!-- FIXME: add model card links -->
-
-## Getting Started
-
-To get started with Cogkit, check out the [Installation](./02-Installation.md) guide, then explore the [Inference](./03-Inference/02-API.md) and [Fine-tuning](./04-Finetune/01-Prerequisites.md) documentation.
-
-## Project Status
-
-Cogkit is under active development, we welcome contributions and feedback from the community.
+Please refer to the [Model Card](./05-Model%20Card.mdx) for more details.
 
 ## Troubleshooting & Disscussion
 

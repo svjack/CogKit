@@ -34,10 +34,10 @@
     {"file_name": "example.png", "id": 0}  // optional
     ```
 
-:::info
-- Image files are optional; if not provided, the system will default to using the first frame of the video as the input image
-- When image files are provided, they are associated with the video file of the same name through the id field
-:::
+    :::info
+    - Image files are optional; if not provided, the system will default to using the first frame of the video as the input image
+    - When image files are provided, they are associated with the video file of the same name through the id field
+    :::
 
 ## Notes
 
