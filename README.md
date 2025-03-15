@@ -13,6 +13,7 @@
 - Extreme reasoning: based on OpenAI style API, browser interface and command line interface.
 
 ## Usage
+
 ### Installation
 
 ```bash
