@@ -4,7 +4,7 @@ build-backend = 'hatchling.build'
 
 
 [project]
-name = 'cogmodels'
+name = 'cogkit'
 dynamic = ['version']
 description = ''
 readme = 'README.md'
@@ -47,13 +47,13 @@ video = ["decord~=0.6.0", "opencv-python-headless~=4.11"]
 
 [project.scripts]
 # FIXME: change name to cogkit
-cogkit = "cogmodels.cli:cli"
+cogkit = "cogkit.cli:cli"
 
 [project.urls]
 # TODO: adds project urls
-# Documentation = 'https://github.com/Chenhui Zhang/cogmodels#readme'
-# Issues = 'https://github.com/Chenhui Zhang/cogmodels/issues'
-# Source = 'https://github.com/Chenhui Zhang/cogmodels'
+# Documentation = 'https://github.com/Chenhui Zhang/cogkit#readme'
+# Issues = 'https://github.com/Chenhui Zhang/cogkit/issues'
+# Source = 'https://github.com/Chenhui Zhang/cogkit'
 
 
 [tool.hatch.version]
@@ -66,7 +66,7 @@ local_scheme = 'no-local-version'
 
 
 [tool.hatch.build.hooks.vcs]
-version-file = 'src/cogmodels/_version.py'
+version-file = 'src/cogkit/_version.py'
 
 
 [tool.hatch.metadata]

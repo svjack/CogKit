@@ -241,7 +241,7 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/macos
 
-src/cogmodels/_version.py
+src/cogkit/_version.py
 tmp/
 
 **/*.safetensor

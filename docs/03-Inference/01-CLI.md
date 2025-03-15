@@ -1,18 +1,18 @@
 ---
 ---
-<!-- FIXME: change cogmodels to cogkit-->
+<!-- FIXME: change cogkit to cogkit-->
 
 <!-- TODO: check this doc -->
 # Command-Line Interface
 
-CogModels provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
+CogKit provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
 
 ## Overview
 
-The main CLI command is `cogmodels`, which provides several subcommands:
+The main CLI command is `cogkit`, which provides several subcommands:
 
 ```bash
-cogmodels [OPTIONS] COMMAND [ARGS]...
+cogkit [OPTIONS] COMMAND [ARGS]...
 ```
 
 Available commands:
@@ -29,7 +29,7 @@ Global options:
 The `inference` command allows you to generate images and videos:
 
 ```bash
-cogmodels inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
+cogkit inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
 ```
 
 ### Examples
@@ -38,10 +38,10 @@ cogmodels inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
 
 ```bash
 # Generate an image from text
-cogmodels inference "a beautiful sunset over mountains" "THUDM/CogView4-6B"
+cogkit inference "a beautiful sunset over mountains" "THUDM/CogView4-6B"
 
 # Generate a video from text
-cogmodels inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
+cogkit inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
 
 ```
 
@@ -51,7 +51,7 @@ cogmodels inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
 The `finetune` command allows you to fine-tune models with your own data:
 
 ```bash
-cogmodels finetune [OPTIONS]
+cogkit finetune [OPTIONS]
 ```
 
 > Note: The fine-tuning command is currently under development. Please check back for updates.
@@ -62,7 +62,7 @@ cogmodels finetune [OPTIONS]
 The `launch` command starts a web UI for interactive use:
 
 ```bash
-cogmodels launch [OPTIONS]
+cogkit launch [OPTIONS]
 ```
 
 This launches a web interface where you can:
@@ -83,6 +83,6 @@ This launches a web interface where you can:
 
 ```bash
 # Launch the web UI on the default port
-cogmodels launch
+cogkit launch
 
 ```

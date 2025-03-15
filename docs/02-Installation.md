@@ -61,14 +61,14 @@ If you have any issues with the installation, you can install Cogkit via Docker.
 
 <!-- FIXME: add link to the docker image -->
 ```bash
-docker pull ghcr.io/cogmodels/cogkit:latest
+docker pull ghcr.io/cogkit/cogkit:latest
 ```
 
 To run the container, use the following command:
 
 <!-- FIXME: add link to the docker image -->
 ```bash
-docker run -it ghcr.io/cogmodels/cogkit:latest
+docker run -it ghcr.io/cogkit/cogkit:latest
 ```
 
 ## Troubleshooting

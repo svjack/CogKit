@@ -18,7 +18,7 @@ We recommend that you read the corresponding [model card](../05-Model%20Card.mdx
 
 <!-- TODO: move training script to cli folder? -->
 <!-- TODO: add link to corresponding folder -->
-1. Navigate to the `src/cogmodels/finetune/diffusion` directory
+1. Navigate to the `src/cogkit/finetune/diffusion` directory
 
 <!-- TODO: add link to training script folder -->
 <!-- TODO: add link to train_ddp_t2i.sh -->

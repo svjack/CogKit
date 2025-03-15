@@ -17,4 +17,4 @@ extra-dependencies = ['mypy>=1.0.0']
 
 
 [envs.types.scripts]
-check = 'mypy --install-types --non-interactive {args:src/cogmodels tests}'
+check = 'mypy --install-types --non-interactive {args:src/cogkit tests}'
