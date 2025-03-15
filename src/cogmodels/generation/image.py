@@ -18,6 +18,7 @@ def generate_image(
     prompt: str,
     model_id_or_path: str,
     save_file: str | Path,
+    transformer_path: str | None = None,
     # * params for model loading
     dtype: torch.dtype = torch.bfloat16,
     # * params for generated images
@@ -30,6 +31,10 @@ def generate_image(
     seed: int | None = 42,
 ):
     pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
+
+    if transformer_path is not None:
+        pipeline.transformer.save_config(transformer_path)
+        pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
 
     height, width = guess_image_resolution(pipeline, height, width)
 

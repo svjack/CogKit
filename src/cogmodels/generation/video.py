@@ -41,6 +41,7 @@ def generate_video(
     prompt: str,
     model_id_or_path: str,
     save_file: str | Path,
+    transformer_path: str | None = None,
     image_file: str | Path | None = None,
     video_file: str | Path | None = None,
     # * params for model loading
@@ -59,6 +60,10 @@ def generate_video(
     seed: int | None = 42,
 ) -> None:
     pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
+
+    if transformer_path is not None:
+        pipeline.transformer.save_config(transformer_path)
+        pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
 
     height, width = guess_resolution(pipeline, height, width)
     if lora_model_id_or_path is not None:
