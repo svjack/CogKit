@@ -4,13 +4,11 @@
 
 Please refer to the [installation guide](../02-Installation.md) to setup your environment
 
-<!-- TODO: clone the repo to finetune? -->
+<!-- TODO: clone the repo to finetune? clone -->
 
 ## Data
 
 Before fine-tuning, you need to prepare your dataset according to the expected format. See the [data format](./03-Data%20Format.md) documentation for details on how to structure your data
-
-<!-- TODO: add link to data format-->
 
 ## Training
 
@@ -39,12 +37,17 @@ We recommend that you read the corresponding [model card](../05-Model%20Card.mdx
 
 ## Load Fine-tuned Model
 
-<!-- TODO: 缺一个合并zero权重的脚本（合并后只有一个transformer的权重，让用户自己把这个权重
-    替换到pipeline文件里，还是cli/api里直接提供一个transformer的权重路径？） -->
-
 ### LoRA
 
-After fine-tuning with LoRA, you can load your trained weights during inference using the `--lora_model_id_or_path` parameter. For more details, please refer to the inference guide.
-
+After fine-tuning with LoRA, you can load your trained weights during inference using the `--lora_model_id_or_path` option or parameter. For more details, please refer to the inference guide.
 
 ### ZeRO
+
+After fine-tuning with ZeRO strategy, you need to use the `zero_to_fp32.py` script provided in the `scripts` directory to convert the ZeRO checkpoint weights into Diffusers format. For example:
+
+<!-- FIXME: path to zero2diffusers.py? -->
+```bash
+python zero2diffusers.py checkpoint_dir/ output_dir/ --bfloat16
+```
+
+During inference, pass the `output_dir/` to the `--transformer_path` option or parameter. For more details, please refer to the inference guide.

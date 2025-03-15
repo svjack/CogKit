@@ -32,20 +32,14 @@ Please refer to the [PyTorch installation guide](https://pytorch.org/get-started
 ### Install Cogkit
 <!-- FIXME: Install via pip install cogkit or via clone&local install? -->
 
-1. Clone the repository:
+1. Install Cogkit:
 
-   <!-- FIXME: add link to the repo -->
+   <!-- TODO: add github link -->
    ```bash
-   git clone https://github.com/yourusername/cogkit.git
+   pip install cogkit@git+https:
    ```
 
-2. Install Cogkit:
-
-   ```bash
-   pip install -e .
-   ```
-
-3. Optional: for video tasks (e.g. text-to-video), install additional dependencies:
+2. Optional: for video tasks (e.g. text-to-video), install additional dependencies:
 
    ```bash
    pip install -e .[video]
@@ -57,9 +51,10 @@ Please refer to the [PyTorch installation guide](https://pytorch.org/get-started
 You can verify that cogkit is installed correctly by running:
 
 ```bash
-python -c "import cogkit; print(cogkit.__version__)"
+python -c "import cogkit"
 ```
 
+<!-- TODO: add in roadmap -->
 ## [Optional] Install via docker
 
 If you have any issues with the installation, you can install Cogkit via Docker. We provide a Docker image that includes all dependencies. You can pull the image from Docker Hub:

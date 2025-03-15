@@ -34,15 +34,15 @@ cogmodels inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
 
 ### Examples
 
+<!-- FIXME: Add example for i2v -->
+
 ```bash
 # Generate an image from text
-cogmodels inference "a beautiful sunset over mountains" runwayml/stable-diffusion-v1-5 --task t2i
+cogmodels inference "a beautiful sunset over mountains" "THUDM/CogView4-6B"
 
 # Generate a video from text
-cogmodels inference "a cat playing with a ball" stabilityai/stable-video-diffusion-img2vid --task t2v
+cogmodels inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
 
-# Generate a video from an image
-cogmodels inference "extend this image into a video" stabilityai/stable-video-diffusion-img2vid --task i2v --image_file input.png
 ```
 
 <!-- FIXME: remove this? -->
@@ -56,6 +56,7 @@ cogmodels finetune [OPTIONS]
 
 > Note: The fine-tuning command is currently under development. Please check back for updates.
 
+<!-- TODO: add docs for launch server -->
 ## Launch Command
 
 The `launch` command starts a web UI for interactive use:
@@ -84,34 +85,4 @@ This launches a web interface where you can:
 # Launch the web UI on the default port
 cogmodels launch
 
-# Launch the web UI with a public URL
-cogmodels launch --share
-```
-
-## Logging and Debugging
-
-CogModels CLI provides different verbosity levels for logging:
-
-```bash
-# Normal output
-cogmodels inference "prompt" model_id
-
-# Verbose output (info level)
-cogmodels -v inference "prompt" model_id
-
-# Very verbose output (debug level)
-cogmodels -vv inference "prompt" model_id
-```
-
-## Environment Variables
-
-The CLI behavior can be modified with environment variables:
-
-- `COGMODELS_CACHE_DIR`: Directory to store cached models and data
-- `COGMODELS_OFFLINE`: Set to "1" to run in offline mode
-- `COGMODELS_VERBOSE`: Set verbosity level (0-2)
-
-Example:
-```bash
-COGMODELS_CACHE_DIR=/path/to/cache cogmodels inference "prompt" model_id
 ```
