@@ -3,7 +3,7 @@
 
 # Installation
 
-Cogkit can be installed using pip. We recommend using a virtual environment to avoid conflicts with other packages.
+CogKit can be installed using pip. We recommend using a virtual environment to avoid conflicts with other packages.
 
 ## Requirements
 

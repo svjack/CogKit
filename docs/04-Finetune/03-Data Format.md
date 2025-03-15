@@ -3,7 +3,6 @@
 
 # Dataset Format
 
-<!-- FIXME: change cogkit to cogkit -->
 <!-- TODO: add link to data dir -->
 `src/cogkit/finetune/data` directory contains various dataset templates for fine-tuning different models, please refer to the corresponding dataset template based on your task type:
 

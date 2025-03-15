@@ -3,7 +3,7 @@ slug: /
 ---
 
 # Introduction
-Cogkit is a powerful framework for working with cognitive AI models, focusing on multimodal generation and fine-tuning capabilities. It provides a unified interface for various AI tasks including text-to-image, text-to-video, and image-to-video generation.
+CogKit is a powerful framework for working with cognitive AI models, focusing on multimodal generation and fine-tuning capabilities. It provides a unified interface for various AI tasks including text-to-image, text-to-video, and image-to-video generation.
 
 <!-- TODO: key features? -->
 ## Key Features

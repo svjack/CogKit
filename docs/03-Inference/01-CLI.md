@@ -1,6 +1,5 @@
 ---
 ---
-<!-- FIXME: change cogkit to cogkit-->
 
 <!-- TODO: check this doc -->
 # Command-Line Interface
