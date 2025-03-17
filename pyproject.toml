@@ -1,45 +1,34 @@
-[build-system]
-requires = ['hatch-vcs>=0.3.0', 'hatchling>=1.24.2,<1.25']
-build-backend = 'hatchling.build'
-
-
 [project]
-name = 'cogmodels'
-dynamic = ['version']
-description = ''
-readme = 'README.md'
-requires-python = '>=3.10'
-license = 'MIT'
-keywords = []
-authors = [{ name = 'Chenhui Zhang', email = 'zhang.chenhui@outlook.com' }]
-classifiers = [
-  'Development Status :: 4 - Beta',
-  'Programming Language :: Python :: 3.10',
-  'Programming Language :: Python :: 3.11',
-  'Programming Language :: Python :: 3.12',
-  'Programming Language :: Python :: Implementation :: CPython',
-  'Programming Language :: Python :: Implementation :: PyPy',
-  'Programming Language :: Python',
-]
-dependencies = [
-  'click',
-  'diffusers~=0.32',
-  'imageio',
-  'imageio-ffmpeg',
-  'sentencepiece',
-  'transformers~=4.49',
-]
+name = "cogkit"
+dynamic = ["version"]
+description = "CogView/CogVideo"
+authors = [{ name = "Chenhui Zhang", email = "zhang.chenhui@outlook.com" }]
+dependencies = ["click~=8.1", "transformers~=4.49", "datasets~=3.4", "sentencepiece==0.2.0", "diffusers @ git+https://github.com/huggingface/diffusers.git", "imageio~=2.37", "imageio-ffmpeg~=0.6.0"]
+requires-python = ">=3.10"
+readme = "README.md"
+# TODO: changes licence
+license = { text = "MIT" }
 
 
 [project.optional-dependencies]
-torch = ["numpy", "torch"]
+torch = ["numpy", "torch", "torchvision"]
 
 
-[project.urls]
-# TODO: adds project urls
-# Documentation = 'https://github.com/Chenhui Zhang/cogmodels#readme'
-# Issues = 'https://github.com/Chenhui Zhang/cogmodels/issues'
-# Source = 'https://github.com/Chenhui Zhang/cogmodels'
+[project.scripts]
+cogkit = "cogkit.cli:cli"
+
+
+[build-system]
+requires = [
+  "hatchling",
+  # * uses vcs (e.g. git) to determine the package version
+  "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+
+[dependency-groups]
+dev = ["mypy~=1.15", "ruff~=0.11.0"]
 
 
 [tool.hatch.version]
@@ -52,22 +41,26 @@ local_scheme = 'no-local-version'
 
 
 [tool.hatch.build.hooks.vcs]
-version-file = 'src/cogmodels/_version.py'
+version-file = 'src/cogkit/_version.py'
 
 
-# [tool.mypy]
+[tool.hatch.metadata]
+allow-direct-references = true
 
 
-# TODO: test coverage
-# [tool.coverage.run]
-# source_pkgs = ['cogmodels', 'tests']
-# branch = true
-# parallel = true
-# omit = ['src/cogmodels/__about__.py']
+[tool.pdm]
+distribution = true
 
-# [tool.coverage.paths]
-# cogmodels = ['*/cogmodels/src/cogmodels', 'src/cogmodels']
-# tests = ['*/cogmodels/tests', 'tests']
 
-# [tool.coverage.report]
-# exclude_lines = ['if TYPE_CHECKING:', 'if __name__ == .__main__.:', 'no cov']
+[tool.ruff]
+# https://github.com/astral-sh/ruff/issues/8627
+exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "dist"]
+target-version = "py310"
+line-length = 100
+indent-width = 4
+
+
+[tool.ruff.format]
+line-ending = "lf"
+quote-style = "double"
+indent-style = "space"

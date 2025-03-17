@@ -1,0 +1,23 @@
+# FROM pytorch/pytorch:2.6.0-cuda12.6-cudnn9-devel
+FROM nvcr.io/nvidia/pytorch:24.08-py3
+ARG DEBIAN_FRONTEND=noninteractive
+RUN set -x
+
+
+###### system-level dependencies ######
+RUN apt-get update && \
+    apt-get install -y git \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+###### install cogmodels ######
+REPO_NAME=cogmodels
+WORKDIR /app
+
+# refactor url later (and maybe repo name)
+RUN git clone https://gitlab.glm.ai/open-source/${REPO_NAME}
+WORKDIR ${REPO_NAME}
+
+RUN pip install uv
+RUN uv pip install . --system
