@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-# from cogmodels.utils.cogvideo.models.utils import get_model_cls
-# from cogmodels.utils.cogvideo.schemas import Args
+# from cogkit.utils.cogvideo.models.utils import get_model_cls
+# from cogkit.utils.cogvideo.schemas import Args
 
 # from models.utils import get_model_cls
 # from utils.schemas import Args

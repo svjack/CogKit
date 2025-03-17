@@ -6,10 +6,10 @@ import time
 
 import click
 
-from cogmodels.cli.finetune import finetune
-from cogmodels.cli.inference import inference
-from cogmodels.cli.launch import launch
-from cogmodels.logging import LOG_FORMAT, get_logger, set_log_level
+from cogkit.cli.finetune import finetune
+from cogkit.cli.inference import inference
+from cogkit.cli.launch import launch
+from cogkit.logging import LOG_FORMAT, get_logger, set_log_level
 
 __all__ = ["cli"]
 _logger = get_logger(__name__)

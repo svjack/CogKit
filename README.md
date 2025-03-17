@@ -6,7 +6,7 @@
 
 ## Introduction
 
-**CogModels** is an open-source initiative by Zhipu AI that provides a user-friendly interface, enabling researchers and developers to access and manipulate the Cog family of models， you can check [here](docs/05-Model%20Card.md) to view support models. The project aims to streamline the application of Cog models across multimodal generation tasks such as **text-to-image (t2i)**, **text-to-video (t2v)**, **image-to-video (i2v)**. It should be noted that utilization of CogModels and associated Cog models must adhere to relevant legal frameworks and ethical guidelines to ensure responsible and ethical implementation.
+**cogkit** is an open-source initiative by Zhipu AI that provides a user-friendly interface, enabling researchers and developers to access and manipulate the Cog family of models， you can check [here](docs/05-Model%20Card.md) to view support models. The project aims to streamline the application of Cog models across multimodal generation tasks such as **text-to-image (t2i)**, **text-to-video (t2v)**, **image-to-video (i2v)**. It should be noted that utilization of CogModels and associated Cog models must adhere to relevant legal frameworks and ethical guidelines to ensure responsible and ethical implementation.
 
 ## Features
 
@@ -22,20 +22,21 @@
 ### Installation
 
 ```bash
-pip install cogmodels
+pip install cogkit
 ```
 
 ### Inference
 
 #### CLI
 
+<!-- TODO: Re-generate this help -->
 ```text
-Usage: python -m cogmodels inference [OPTIONS] PROMPT MODEL_ID_OR_PATH OUTPUT_FILE
+Usage: python -m cogkit inference [OPTIONS] PROMPT MODEL_ID_OR_PATH OUTPUT_FILE
 
 Options:
+  --save_file TEXT                     the path where the generated image or video will be saved.
   --task [t2v|i2v|v2v|t2i]             select the task type in t2v, i2v, v2v, t2i
   --image_file FILE                    the input image file
-  --video_file FILE                    the input video file
   --lora_model_id_or_path TEXT         the id or the path of the LoRA weights
   --lora_rank INTEGER RANGE            the rank of the LoRA weights  [x>=1]
   --dtype [bfloat16|float16]           the data type used in the computation
@@ -49,7 +50,7 @@ Options:
 #### Quick start
 
 ```bash
-python -m cogmodels "a flying dog" ${PATH_TO_COGVIDEO} ${OUTPUT_FILE}
+python -m cogkit "a flying dog" ${PATH_TO_COGVIDEO} ${OUTPUT_FILE}
 ```
 
 ### Finetune

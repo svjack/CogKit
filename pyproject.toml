@@ -3,10 +3,18 @@ name = "cogkit"
 dynamic = ["version"]
 description = "CogView/CogVideo"
 authors = [{ name = "Chenhui Zhang", email = "zhang.chenhui@outlook.com" }]
-dependencies = ["click~=8.1", "transformers~=4.49", "datasets~=3.4", "sentencepiece==0.2.0", "diffusers @ git+https://github.com/huggingface/diffusers.git", "imageio~=2.37", "imageio-ffmpeg~=0.6.0"]
+dependencies = [
+  "click~=8.1",
+  "datasets~=3.4",
+  "diffusers @ git+https://github.com/huggingface/diffusers.git",
+  "imageio-ffmpeg~=0.6.0",
+  "imageio~=2.37",
+  "sentencepiece==0.2.0",
+  "transformers~=4.49",
+]
 requires-python = ">=3.10"
 readme = "README.md"
-# TODO: changes licence
+# FIXME: changes licence
 license = { text = "MIT" }
 
 

@@ -10,11 +10,12 @@ import torch
 from diffusers import DiffusionPipeline
 from diffusers.pipelines.cogvideo.pipeline_output import CogVideoXPipelineOutput
 from diffusers.utils import export_to_video
+from PIL import Image
 
-from cogmodels.generation.util import before_generation, guess_resolution
-from cogmodels.logging import get_logger
-from cogmodels.types import GenerationMode
-from cogmodels.utils import (
+from cogkit.generation.util import before_generation, guess_resolution
+from cogkit.logging import get_logger
+from cogkit.types import GenerationMode
+from cogkit.utils import (
     load_lora_checkpoint,
     mkdir,
     rand_generator,
@@ -59,15 +60,11 @@ def generate_video(
     guidance_scale: float = 6.0,
     seed: int | None = 42,
 ) -> None:
-    pipeline = DiffusionPipeline.from_pretrained(
-        model_id_or_path, torch_dtype=dtype
-    )
+    pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
 
     if transformer_path is not None:
         pipeline.transformer.save_config(transformer_path)
-        pipeline.transformer = pipeline.transformer.from_pretrained(
-            transformer_path
-        )
+        pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
     if lora_model_id_or_path is not None:
         load_lora_checkpoint(lora_model_id_or_path, pipeline, lora_rank)
     height, width = guess_resolution(pipeline, height, width)
@@ -89,8 +86,9 @@ def generate_video(
     if task == GenerationMode.TextToVideo:
         pipeline_out = pipeline_fn()
     elif task == GenerationMode.ImageToVideo:
-        pipeline_out = pipeline_fn(image=image_file)
+        pipeline_out = pipeline_fn(image=Image.open(image_file))
     elif task == GenerationMode.VideoToVideo:
+        # FIXME: reads video file
         pipeline_out = pipeline_fn(video=video_file)
     else:
         err_msg = f"Unknown generation mode: {task.value}"
@@ -98,8 +96,6 @@ def generate_video(
 
     output_file = resolve_path(output_file)
     mkdir(output_file.parent)
-    _logger.info(
-        "Saving the generated video to path '%s'.", os.fspath(output_file)
-    )
+    _logger.info("Saving the generated video to path '%s'.", os.fspath(output_file))
     batch_video = _cast_to_pipeline_output(pipeline_out).frames
     export_to_video(batch_video[0], output_file, fps=fps)
