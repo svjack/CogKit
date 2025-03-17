@@ -6,9 +6,9 @@ from typing import Literal
 
 import click
 
-from cogmodels.generation import generate_image, generate_video
-from cogmodels.types import GenerationMode
-from cogmodels.utils import cast_to_torch_dtype, guess_generation_mode
+from cogkit.generation import generate_image, generate_video
+from cogkit.types import GenerationMode
+from cogkit.utils import cast_to_torch_dtype, guess_generation_mode
 
 
 @click.command()
@@ -41,15 +41,14 @@ from cogmodels.utils import cast_to_torch_dtype, guess_generation_mode
     default="bfloat16",
     help="the data type used in the computation",
 )
+# FIXME: support model_id?
 @click.option(
     "--transformer_path",
     type=click.Path(file_okay=False, exists=True),
     default=None,
     help="the path to load the transformer model",
 )
-@click.option(
-    "--lora_model_id_or_path", help="the id or the path of the LoRA weights"
-)
+@click.option("--lora_model_id_or_path", help="the id or the path of the LoRA weights")
 @click.option(
     "--lora_rank",
     type=click.IntRange(min=1),
