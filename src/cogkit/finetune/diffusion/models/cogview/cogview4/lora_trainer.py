@@ -11,10 +11,17 @@ from PIL import Image
 from transformers import AutoTokenizer, GlmForCausalLM
 from typing_extensions import override
 
+<<<<<<< HEAD
 from cogmodels.finetune import register
 from cogmodels.finetune.diffusion.schemas import DiffusionComponents
 from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
 from cogmodels.finetune.utils import unwrap_model
+=======
+from cogkit.finetune import register
+from cogkit.finetune.diffusion.schemas import DiffusionComponents
+from cogkit.finetune.diffusion.trainer import DiffusionTrainer
+from cogkit.finetune.utils import unwrap_model
+>>>>>>> test/main
 
 
 class Cogview4Trainer(DiffusionTrainer):

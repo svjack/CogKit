@@ -11,8 +11,13 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
+<<<<<<< HEAD
 ###### install cogmodels ######
 REPO_NAME=cogmodels
+=======
+###### install cogkit ######
+REPO_NAME=cogkit
+>>>>>>> test/main
 WORKDIR /app
 
 # refactor url later (and maybe repo name)

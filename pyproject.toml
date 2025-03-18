@@ -1,8 +1,11 @@
 [project]
 name = "cogkit"
 dynamic = ["version"]
+# TODO: adds a short description, will be displayed on the github page
 description = "CogView/CogVideo"
-authors = [{ name = "Chenhui Zhang", email = "zhang.chenhui@outlook.com" }]
+authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
+# TODO: adds maintainers
+# maintainers = []
 dependencies = [
   "click~=8.1",
   "datasets~=3.4",
@@ -17,9 +20,11 @@ readme = "README.md"
 # FIXME: changes licence
 license = { text = "MIT" }
 
-
 [project.optional-dependencies]
 torch = ["numpy", "torch", "torchvision"]
+
+# TODO: adds project urls
+# [project.urls]
 
 
 [project.scripts]

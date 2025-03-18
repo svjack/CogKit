@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
+
 from typing import Literal
 
-from cogmodels.finetune import BaseTrainer
+from cogkit.finetune import BaseTrainer
 
 SUPPORTED_MODELS: dict[str, dict[str, BaseTrainer]] = {}
 

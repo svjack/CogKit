@@ -4,6 +4,7 @@
 import os
 from pathlib import Path
 
+<<<<<<< HEAD
 from cogmodels.logging import get_logger
 from cogmodels.types import GenerationMode
 from cogmodels.utils.diffusion_pipeline import get_pipeline_meta
@@ -76,6 +77,15 @@ def _check_image_to_video_params(
             pl_cls_name,
         )
 
+=======
+from cogkit.logging import get_logger
+from cogkit.types import GenerationMode
+from cogkit.utils.diffusion_pipeline import get_pipeline_meta
+from cogkit.utils.path import resolve_path
+
+_logger = get_logger(__name__)
+
+>>>>>>> test/main
 
 def guess_generation_mode(
     model_id_or_path: str,
@@ -89,6 +99,7 @@ def guess_generation_mode(
         err_msg = f"Failed to parse the pipeline configuration (pipeline_cls = {pl_cls_name})."
         raise ValueError(err_msg)
 
+<<<<<<< HEAD
     if not pl_cls_name not in _SUPPORTED_PIPELINE:
         err_msg = f"The pipeline '{pl_cls_name}' is not supported."
         raise ValueError(err_msg)
@@ -111,6 +122,39 @@ def guess_generation_mode(
         )
 
     valid_vid_file = _validate_file(video_file)
+=======
+    if pl_cls_name.startswith("CogView"):
+        return GenerationMode.TextToImage
+    if not pl_cls_name.startswith("CogVideo"):
+        err_msg = f"Unknown diffusion pipeline: {pl_cls_name}"
+        raise ValueError(err_msg)
+
+    if generation_mode is not None:
+        return GenerationMode(generation_mode)
+
+    def _validate_file(path: str | Path | None) -> Path | None:
+        if path is None:
+            return None
+
+        path = resolve_path(path)
+        if not path.is_file():
+            _logger.warning(
+                "Path '%s' is not a regular file. Will ignore it.",
+                os.fspath(path),
+            )
+            return None
+        return path
+
+    valid_img_file = _validate_file(image_file)
+    valid_vid_file = _validate_file(video_file)
+
+    if valid_img_file is not None and valid_vid_file is not None:
+        _logger.warning("Both image and video input are received. Will ignore the video.")
+        valid_vid_file = None
+
+    if valid_img_file is not None:
+        return GenerationMode.ImageToVideo
+>>>>>>> test/main
     if valid_vid_file is not None:
         return GenerationMode.VideoToVideo
     return GenerationMode.TextToVideo

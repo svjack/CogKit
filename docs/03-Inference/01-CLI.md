@@ -1,10 +1,14 @@
 ---
 ---
+<<<<<<< HEAD
 <!-- FIXME: change cogmodels to cogkit-->
+=======
+>>>>>>> test/main
 
 <!-- TODO: check this doc -->
 # Command-Line Interface
 
+<<<<<<< HEAD
 CogModels provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
 
 ## Overview
@@ -13,12 +17,25 @@ The main CLI command is `cogmodels`, which provides several subcommands:
 
 ```bash
 cogmodels [OPTIONS] COMMAND [ARGS]...
+=======
+CogKit provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
+
+## Overview
+
+The main CLI command is `cogkit`, which provides several subcommands:
+
+```bash
+cogkit [OPTIONS] COMMAND [ARGS]...
+>>>>>>> test/main
 ```
 
 Available commands:
 - `inference`: Generate images or videos using AI models
+<<<<<<< HEAD
 <!-- FIXME: remove this? -->
 - `finetune`: Fine-tune models with custom data
+=======
+>>>>>>> test/main
 - `launch`: Launch a web UI for interactive use
 
 Global options:
@@ -29,11 +46,16 @@ Global options:
 The `inference` command allows you to generate images and videos:
 
 ```bash
+<<<<<<< HEAD
 cogmodels inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
+=======
+cogkit inference [OPTIONS] PROMPT MODEL_ID_OR_PATH
+>>>>>>> test/main
 ```
 
 ### Examples
 
+<<<<<<< HEAD
 <!-- FIXME: Add example for i2v -->
 
 ```bash
@@ -46,12 +68,27 @@ cogmodels inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
 ```
 
 <!-- FIXME: remove this? -->
+=======
+```bash
+# Generate an image from text
+cogkit inference "a beautiful sunset over mountains" "THUDM/CogView4-6B"
+
+# Generate a video from text
+cogkit inference "a cat playing with a ball" "THUDM/CogVideoX1.5-5B"
+
+```
+
+>>>>>>> test/main
 ## Fine-tuning Command
 
 The `finetune` command allows you to fine-tune models with your own data:
 
 ```bash
+<<<<<<< HEAD
 cogmodels finetune [OPTIONS]
+=======
+cogkit finetune [OPTIONS]
+>>>>>>> test/main
 ```
 
 > Note: The fine-tuning command is currently under development. Please check back for updates.
@@ -62,7 +99,11 @@ cogmodels finetune [OPTIONS]
 The `launch` command starts a web UI for interactive use:
 
 ```bash
+<<<<<<< HEAD
 cogmodels launch [OPTIONS]
+=======
+cogkit launch [OPTIONS]
+>>>>>>> test/main
 ```
 
 This launches a web interface where you can:
@@ -83,6 +124,10 @@ This launches a web interface where you can:
 
 ```bash
 # Launch the web UI on the default port
+<<<<<<< HEAD
 cogmodels launch
+=======
+cogkit launch
+>>>>>>> test/main
 
 ```

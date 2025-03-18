@@ -12,7 +12,11 @@ from diffusers.utils.export_utils import export_to_video
 from PIL import Image
 from typing_extensions import override
 
+<<<<<<< HEAD
 from cogmodels.finetune.base import BaseTrainer
+=======
+from cogkit.finetune.base import BaseTrainer
+>>>>>>> test/main
 
 from ..utils import (
     cast_training_params,

@@ -9,16 +9,19 @@ from diffusers import (
     DiffusionPipeline,
 )
 
-# Recommended resolution for each model (width, height)
-# RESOLUTION_MAP = {
-#     # cogvideox1.5-*
-#     "cogvideox1.5-5b-i2v": (768, 1360),
-#     "cogvideox1.5-5b": (768, 1360),
-#     # cogvideox-*
-#     "cogvideox-5b-i2v": (480, 720),
-#     "cogvideox-5b": (480, 720),
-#     "cogvideox-2b": (480, 720),
-# }
+
+def _guess_cogview_resolution(
+    pipeline: DiffusionPipeline, height: int | None = None, width: int | None = None
+) -> tuple[int, int]:
+    # TODO: completes this
+    raise NotImplementedError
+
+
+def _guess_cogvideox_resolution(
+    pipeline: DiffusionPipeline, height: int | None, width: int | None = None
+) -> tuple[int, int]:
+    # TODO: completes this
+    raise NotImplementedError
 
 
 def guess_resolution(
@@ -34,22 +37,6 @@ def guess_resolution(
 
     err_msg = f"The pipeline '{pl_cls_name}' is not supported."
     raise ValueError(err_msg)
-
-
-def _guess_cogview_resolution(
-    pipeline: DiffusionPipeline,
-    height: int | None = None,
-    width: int | None = None,
-) -> tuple[int, int]:
-    # TODO: completes this
-    raise NotImplementedError
-
-
-def _guess_cogvideox_resolution(
-    pipeline: DiffusionPipeline, height: int | None, width: int | None = None
-) -> tuple[int, int]:
-    # TODO: completes this
-    raise NotImplementedError
 
 
 def before_generation(pipeline: DiffusionPipeline):

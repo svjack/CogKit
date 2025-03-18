@@ -1,60 +1,22 @@
-# CogModel
-
-## Updates
-
-- 2025-mm-DD, release and open source cogmodel.
+# CogKit
 
 ## Introduction
 
-**cogkit** is an open-source initiative by Zhipu AI that provides a user-friendly interface, enabling researchers and developers to access and manipulate the Cog family of models， you can check [here](docs/05-Model%20Card.md) to view support models. The project aims to streamline the application of Cog models across multimodal generation tasks such as **text-to-image (t2i)**, **text-to-video (t2v)**, **image-to-video (i2v)**. It should be noted that utilization of CogModels and associated Cog models must adhere to relevant legal frameworks and ethical guidelines to ensure responsible and ethical implementation.
+**CogKit** is an open-source project that provides a user-friendly interface for researchers and developers to utilize ZhipuAI's [**CogView**](https://huggingface.co/collections/THUDM/cogview-67ac3f241eefad2af015669b) (image generation) and [**CogVideoX**](https://huggingface.co/collections/THUDM/cogvideo-66c08e62f1685a3ade464cce) (video generation) models. It streamlines multimodal tasks such as **text-to-image (T2I)**, **text-to-video (T2V)**, and **image-to-video (I2V)**. Users must comply with legal and ethical guidelines to ensure responsible implementation.
+
+Visit our [**Docs**](https://thudm.github.io/CogKit) to start.
 
 ## Features
 
-- Multiple models: CogVideoX, CogVideoX1.5, Cogview3, Cogview4, etc.
-- Ensemble methods: (incremental) pre-training, (multimodal) instruction.
-- Multiple precisions: 16-bit full parameter fine-tuning, frozen fine-tuning, LoRA fine-tuning.
-- Fine-tuning methods: single machine single card, single machine multiple cards, multiple machines multiple cards.
-- Wide range of tasks: multi-round dialogue, image generation, video generation, etc.
-- Extreme reasoning: based on OpenAI style API, browser interface and command line interface.
+- **Fine-tuning Methods**: Supports **LoRA** and **full-parameter fine-tuning** across various setups, including **single-machine single-GPU**, **single-machine multi-GPU**, and **multi-machine multi-GPU** configurations.
+- **Inference**: Provides an **OpenAI-style API** (T2I Only), a **GUI**, and a **command-line interface** for seamless model deployment.
+- **Embed Cache**: Optimizes GPU memory usage to enhance efficiency during inference.
 
-## Usage
+## Roadmap
 
-### Installation
+- [ ] Add support for CogView4 ControlNet model
+- [ ] Docker for easy deployment
 
-```bash
-pip install cogkit
-```
+## License
 
-### Inference
-
-#### CLI
-
-<!-- TODO: Re-generate this help -->
-```text
-Usage: python -m cogkit inference [OPTIONS] PROMPT MODEL_ID_OR_PATH OUTPUT_FILE
-
-Options:
-  --save_file TEXT                     the path where the generated image or video will be saved.
-  --task [t2v|i2v|v2v|t2i]             select the task type in t2v, i2v, v2v, t2i
-  --image_file FILE                    the input image file
-  --lora_model_id_or_path TEXT         the id or the path of the LoRA weights
-  --lora_rank INTEGER RANGE            the rank of the LoRA weights  [x>=1]
-  --dtype [bfloat16|float16]           the data type used in the computation
-  --num_frames INTEGER RANGE           the number of the frames in the generated video (NOT EFFECTIVE in the image generation task) [x>=1]
-  --fps INTEGER RANGE                  the frames per second of the generated video (NOT EFFECTIVE in the image generation task) [x>=1]
-  --num_inference_steps INTEGER RANGE  the number of the diffusion steps  [x>=1]
-  --seed INTEGER                       the seed for reproducibility
-  --help                               Show this message and exit.
-```
-
-#### Quick start
-
-```bash
-python -m cogkit "a flying dog" ${PATH_TO_COGVIDEO} ${OUTPUT_FILE}
-```
-
-### Finetune
-
-#### API Server
-
-### Post Training
+This project is licensed under the [Apache 2.0 License](LICENSE).

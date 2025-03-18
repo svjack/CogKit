@@ -25,7 +25,11 @@ from peft import (
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
+<<<<<<< HEAD
 from cogmodels.finetune.base import BaseArgs, BaseComponents, BaseState
+=======
+from cogkit.finetune.base import BaseArgs, BaseComponents, BaseState
+>>>>>>> test/main
 
 from ..utils import (
     cast_training_params,

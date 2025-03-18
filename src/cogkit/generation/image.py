@@ -31,6 +31,7 @@ def generate_image(
     seed: int | None = 42,
 ):
     pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
+
     if transformer_path is not None:
         pipeline.transformer.save_config(transformer_path)
         pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)

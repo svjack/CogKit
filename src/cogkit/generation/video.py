@@ -25,9 +25,7 @@ from cogkit.utils import (
 _logger = get_logger(__name__)
 
 
-def _cast_to_pipeline_output(
-    output: Any,
-) -> CogVideoXPipelineOutput:
+def _cast_to_pipeline_output(output: Any) -> CogVideoXPipelineOutput:
     if isinstance(output, CogVideoXPipelineOutput):
         return output
     if isinstance(output, tuple):

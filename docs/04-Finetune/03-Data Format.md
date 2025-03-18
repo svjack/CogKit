@@ -3,9 +3,14 @@
 
 # Dataset Format
 
+<<<<<<< HEAD
 <!-- FIXME: change cogmodels to cogkit -->
 <!-- TODO: add link to data dir -->
 `src/cogmodels/finetune/data` directory contains various dataset templates for fine-tuning different models, please refer to the corresponding dataset template based on your task type:
+=======
+<!-- TODO: add link to data dir -->
+`src/cogkit/finetune/data` directory contains various dataset templates for fine-tuning different models, please refer to the corresponding dataset template based on your task type:
+>>>>>>> test/main
 
 ## Text-to-Image Conversion Dataset (t2i)
 - Each directory contains a set of image files (`.png`)

@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from typing import Any
 
 import torch
@@ -12,10 +15,10 @@ from PIL import Image
 from transformers import AutoTokenizer, T5EncoderModel
 from typing_extensions import override
 
-from cogmodels.finetune import register
-from cogmodels.finetune.diffusion.schemas import DiffusionComponents
-from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
-from cogmodels.finetune.utils import unwrap_model
+from cogkit.finetune import register
+from cogkit.finetune.diffusion.schemas import DiffusionComponents
+from cogkit.finetune.diffusion.trainer import DiffusionTrainer
+from cogkit.finetune.utils import unwrap_model
 
 
 class CogVideoXI2VLoraTrainer(DiffusionTrainer):

@@ -8,8 +8,8 @@ from typing import TypedDict
 from diffusers import DiffusionPipeline
 from huggingface_hub import hf_hub_download
 
-from cogmodels.logging import get_logger
-from cogmodels.utils.path import resolve_path
+from cogkit.logging import get_logger
+from cogkit.utils.path import resolve_path
 
 _logger = get_logger(__name__)
 

@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
+
 from typing import Any
 
-from cogmodels.finetune.base import BaseComponents
+from cogkit.finetune.base import BaseComponents
 
 
 class DiffusionComponents(BaseComponents):
