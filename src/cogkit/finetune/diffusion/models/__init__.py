@@ -3,11 +3,7 @@ from pathlib import Path
 
 package_dir = Path(__file__).parent
 
-<<<<<<< HEAD
-# import all cogmodels to trigger register
-=======
 # import all cogkit to trigger register
->>>>>>> test/main
 for subdir1 in package_dir.iterdir():
     if not (subdir1.is_dir() and not subdir1.name.startswith("_")):
         continue

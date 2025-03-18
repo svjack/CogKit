@@ -3,16 +3,12 @@
 
 # Dataset Format
 
-<<<<<<< HEAD
 <!-- FIXME: change cogmodels to cogkit -->
 <!-- TODO: add link to data dir -->
-`src/cogmodels/finetune/data` directory contains various dataset templates for fine-tuning different models, please refer to the corresponding dataset template based on your task type:
-=======
-<!-- TODO: add link to data dir -->
 `src/cogkit/finetune/data` directory contains various dataset templates for fine-tuning different models, please refer to the corresponding dataset template based on your task type:
->>>>>>> test/main
 
 ## Text-to-Image Conversion Dataset (t2i)
+
 - Each directory contains a set of image files (`.png`)
 - The `metadata.jsonl` file contains text descriptions for each image
 
@@ -40,8 +36,8 @@
     ```
 
     :::info
-    - Image files are optional; if not provided, the system will default to using the first frame of the video as the input image
-    - When image files are provided, they are associated with the video file of the same name through the id field
+  - Image files are optional; if not provided, the system will default to using the first frame of the video as the input image
+  - When image files are provided, they are associated with the video file of the same name through the id field
     :::
 
 ## Notes

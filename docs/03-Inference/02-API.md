@@ -3,15 +3,11 @@
 
 # API
 
-<<<<<<< HEAD
 Cogkit provides a powerful inference API for generating images and videos using various AI models. This document covers both the Python API and API server.
-=======
-CogKit provides a powerful inference API for generating images and videos using various AI models. This document covers both the Python API and API server.
->>>>>>> test/main
 
 ## Python API
 
-You can also use Cogkit programmatically in your Python code:
+You can also use `cogkit` programmatically in your Python code:
 
 ```python
 from cogkit.generation import generate_image, generate_video

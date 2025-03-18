@@ -17,8 +17,8 @@ dependencies = [
 ]
 requires-python = ">=3.10"
 readme = "README.md"
-# FIXME: changes licence
-license = { text = "MIT" }
+# FIXME: see guides in PEP 639
+license = "Apache2.0"
 
 [project.optional-dependencies]
 torch = ["numpy", "torch", "torchvision"]

@@ -4,11 +4,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-<<<<<<< HEAD
-from cogmodels.finetune import get_model_cls
-=======
 from cogkit.finetune import get_model_cls
->>>>>>> test/main
 
 
 def main():

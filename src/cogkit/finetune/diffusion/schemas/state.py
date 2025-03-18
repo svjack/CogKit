@@ -1,11 +1,10 @@
+# -*- coding: utf-8 -*-
+
+
 from pathlib import Path
 from typing import Any
 
-<<<<<<< HEAD
-from cogmodels.finetune.base import BaseState
-=======
 from cogkit.finetune.base import BaseState
->>>>>>> test/main
 
 
 class DiffusionState(BaseState):

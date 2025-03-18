@@ -12,11 +12,7 @@ from diffusers.utils.export_utils import export_to_video
 from PIL import Image
 from typing_extensions import override
 
-<<<<<<< HEAD
-from cogmodels.finetune.base import BaseTrainer
-=======
 from cogkit.finetune.base import BaseTrainer
->>>>>>> test/main
 
 from ..utils import (
     cast_training_params,
@@ -26,7 +22,7 @@ from ..utils import (
     unload_model,
 )
 from .constants import LOG_LEVEL, LOG_NAME
-from .diff_datasets import I2VDatasetWithResize, T2VDatasetWithResize, T2IDatasetWithResize
+from .diff_datasets import I2VDatasetWithResize, T2IDatasetWithResize, T2VDatasetWithResize
 from .diff_datasets.utils import (
     load_images,
     load_prompts,

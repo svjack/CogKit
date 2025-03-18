@@ -11,18 +11,14 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 
-<<<<<<< HEAD
-###### install cogmodels ######
-REPO_NAME=cogmodels
-=======
 ###### install cogkit ######
 REPO_NAME=cogkit
->>>>>>> test/main
 WORKDIR /app
 
 # refactor url later (and maybe repo name)
-RUN git clone https://gitlab.glm.ai/open-source/${REPO_NAME}
+RUN git clone https://github.com/THUDM/${REPO_NAME}.git
 WORKDIR ${REPO_NAME}
 
+# TODO: use `pdm sync`
 RUN pip install uv
 RUN uv pip install . --system

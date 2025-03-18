@@ -18,11 +18,7 @@ We recommend that you read the corresponding [model card](../05-Model%20Card.mdx
 
 <!-- TODO: move training script to cli folder? -->
 <!-- TODO: add link to corresponding folder -->
-<<<<<<< HEAD
-1. Navigate to the `src/cogmodels/finetune/diffusion` directory
-=======
 1. Navigate to the `src/cogkit/finetune/diffusion` directory
->>>>>>> test/main
 
 <!-- TODO: add link to training script folder -->
 <!-- TODO: add link to train_ddp_t2i.sh -->
@@ -34,10 +30,10 @@ We recommend that you read the corresponding [model card](../05-Model%20Card.mdx
 4. If you are using ZeRO strategy, refer to `accelerate_config.yaml` to confirm your ZeRO level and number of GPUs
 
 5. Run the script, for example:
+
    ```bash
    bash scripts/train_ddp_t2i.sh
    ```
-
 
 ## Load Fine-tuned Model
 
