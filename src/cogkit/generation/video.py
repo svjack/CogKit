@@ -58,6 +58,8 @@ def generate_video(
     guidance_scale: float = 6.0,
     seed: int | None = 42,
 ) -> None:
+    # FIXME: check the value of num_frames as documented in the model card
+    # FIXME: check if this line can correctly load t2v pipeline?
     pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
 
     if transformer_path is not None:

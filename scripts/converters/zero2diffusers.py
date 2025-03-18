@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+# TODO: revises this docstring
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -16,33 +17,34 @@
 #   python zero_to_fp32.py checkpoint_dir/ output_dir/ --bfloat16
 
 import argparse
-import torch
+import gc
 import glob
+import json
 import math
 import os
 import re
-import gc
-import json
-import numpy as np
-from tqdm import tqdm
 from collections import OrderedDict
 from dataclasses import dataclass
+
+import numpy as np
+import torch
+from deepspeed.checkpoint.constants import (
+    BUFFER_NAMES,
+    DS_VERSION,
+    FP32_FLAT_GROUPS,
+    FROZEN_PARAM_FRAGMENTS,
+    FROZEN_PARAM_SHAPES,
+    OPTIMIZER_STATE_DICT,
+    PARAM_SHAPES,
+    PARTITION_COUNT,
+    SINGLE_PARTITION_OF_FP32_GROUPS,
+    ZERO_STAGE,
+)
 
 # while this script doesn't use deepspeed to recover data, since the checkpoints are pickled with
 # DeepSpeed data structures it has to be available in the current python environment.
 from deepspeed.utils import logger
-from deepspeed.checkpoint.constants import (
-    DS_VERSION,
-    OPTIMIZER_STATE_DICT,
-    SINGLE_PARTITION_OF_FP32_GROUPS,
-    FP32_FLAT_GROUPS,
-    ZERO_STAGE,
-    PARTITION_COUNT,
-    PARAM_SHAPES,
-    BUFFER_NAMES,
-    FROZEN_PARAM_SHAPES,
-    FROZEN_PARAM_FRAGMENTS,
-)
+from tqdm import tqdm
 
 
 @dataclass
@@ -58,7 +60,7 @@ class zero_model_state:
 debug = 0
 
 # load to cpu
-device = torch.device('cpu')
+device = torch.device("cpu")
 
 
 def atoi(text):
@@ -66,12 +68,12 @@ def atoi(text):
 
 
 def natural_keys(text):
-    '''
+    """
     alist.sort(key=natural_keys) sorts in human order
     http://nedbatchelder.com/blog/200712/human_sorting.html
     (See Toothy's implementation in the comments)
-    '''
-    return [atoi(c) for c in re.split(r'(\d+)', text)]
+    """
+    return [atoi(c) for c in re.split(r"(\d+)", text)]
 
 
 def get_model_state_file(checkpoint_dir, zero_stage):
@@ -159,7 +161,7 @@ def parse_model_states(files):
 def parse_optim_states(files, ds_checkpoint_dir):
     total_files = len(files)
     state_dicts = []
-    for f in tqdm(files, desc='Loading checkpoint shards'):
+    for f in tqdm(files, desc="Loading checkpoint shards"):
         state_dict = torch.load(f, map_location=device, mmap=True, weights_only=False)
         # immediately discard the potentially huge 2 optimizer states as we only care for fp32 master weights
         # and also handle the case where it was already removed by another helper script
@@ -215,7 +217,7 @@ def _get_fp32_state_dict_from_zero_checkpoint(ds_checkpoint_dir, exclude_frozen_
     model_files = get_model_state_files(ds_checkpoint_dir)
 
     zero_model_states = parse_model_states(model_files)
-    print(f'Parsing checkpoint created by deepspeed=={zero_model_states[0].ds_version}')
+    print(f"Parsing checkpoint created by deepspeed=={zero_model_states[0].ds_version}")
 
     if zero_stage <= 2:
         return _get_fp32_state_dict_from_zero2_checkpoint(
@@ -239,13 +241,13 @@ def _zero2_merge_frozen_params(state_dict, zero_model_states):
 
     if debug:
         num_elem = sum(s.numel() for s in frozen_param_shapes.values())
-        print(f'rank 0: {FROZEN_PARAM_SHAPES}.numel = {num_elem}')
+        print(f"rank 0: {FROZEN_PARAM_SHAPES}.numel = {num_elem}")
 
         wanted_params = len(frozen_param_shapes)
         wanted_numel = sum(s.numel() for s in frozen_param_shapes.values())
         avail_numel = sum([p.numel() for p in frozen_param_fragments.values()])
-        print(f'Frozen params: Have {avail_numel} numels to process.')
-        print(f'Frozen params: Need {wanted_numel} numels in {wanted_params} params')
+        print(f"Frozen params: Have {avail_numel} numels to process.")
+        print(f"Frozen params: Need {wanted_numel} numels in {wanted_params} params")
 
     total_params = 0
     total_numel = 0
@@ -314,7 +316,7 @@ def _zero2_merge_trainable_params(state_dict, world_size, fp32_flat_groups, zero
         avail_numel = full_single_fp32_vector.numel()
         for name, shape in shapes.items():
             unpartitioned_numel = (
-                shape.numel() if _has_callable(shape, 'numel') else math.prod(shape)
+                shape.numel() if _has_callable(shape, "numel") else math.prod(shape)
             )
             total_numel += unpartitioned_numel
             total_params += 1
@@ -392,7 +394,7 @@ def _zero3_merge_frozen_params(state_dict, world_size, zero_model_states):
     if debug:
         for i in range(world_size):
             num_elem = sum(s.numel() for s in zero_model_states[i].frozen_param_fragments.values())
-            print(f'rank {i}: {FROZEN_PARAM_SHAPES}.numel = {num_elem}')
+            print(f"rank {i}: {FROZEN_PARAM_SHAPES}.numel = {num_elem}")
 
         frozen_param_shapes = zero_model_states[0].frozen_param_shapes
         wanted_params = len(frozen_param_shapes)
@@ -401,8 +403,8 @@ def _zero3_merge_frozen_params(state_dict, world_size, zero_model_states):
             sum([p.numel() for p in zero_model_states[0].frozen_param_fragments.values()])
             * world_size
         )
-        print(f'Frozen params: Have {avail_numel} numels to process.')
-        print(f'Frozen params: Need {wanted_numel} numels in {wanted_params} params')
+        print(f"Frozen params: Have {avail_numel} numels to process.")
+        print(f"Frozen params: Need {wanted_numel} numels in {wanted_params} params")
 
     total_params = 0
     total_numel = 0
@@ -515,7 +517,7 @@ def _zero3_merge_trainable_params(state_dict, world_size, fp32_flat_groups, zero
     flat_groups_offset = [0] + list(
         np.cumsum([flat_tensor.numel() for flat_tensor in fp32_flat_groups[0]])
     )
-    for name, shape in tqdm(param_shapes.items(), desc='Gathering sharded weights'):
+    for name, shape in tqdm(param_shapes.items(), desc="Gathering sharded weights"):
         unpartitioned_numel = shape.numel()
         total_numel += unpartitioned_numel
         total_params += 1
@@ -649,9 +651,9 @@ def get_fp32_state_dict_from_zero_checkpoint(
             # del tensor to release memory if it no longer in use
     """
     if tag is None:
-        latest_path = os.path.join(checkpoint_dir, 'latest')
+        latest_path = os.path.join(checkpoint_dir, "latest")
         if os.path.isfile(latest_path):
-            with open(latest_path, 'r') as fd:
+            with open(latest_path, "r") as fd:
                 tag = fd.read().strip()
         else:
             raise ValueError(f"Unable to find 'latest' file at {latest_path}")
@@ -696,13 +698,13 @@ def convert_zero_checkpoint_to_fp32_state_dict(
         try:
             from safetensors.torch import save_file
         except ImportError:
-            print('If you want to use `safe_serialization`, please `pip install safetensors`')
+            print("If you want to use `safe_serialization`, please `pip install safetensors`")
             raise
     if max_shard_size is not None:
         try:
             from huggingface_hub import split_torch_state_dict_into_shards
         except ImportError:
-            print('If you want to use `max_shard_size`, please `pip install huggingface_hub`')
+            print("If you want to use `max_shard_size`, please `pip install huggingface_hub`")
             raise
 
     # Convert zero checkpoint to state_dict
@@ -818,7 +820,7 @@ if __name__ == "__main__":
         "output_dir", type=str, help="directory to the pytorch fp32 state_dict output files"
     )
     parser.add_argument(
-        "--bfloat16", action='store_true', help="convert weights to bfloat16 format"
+        "--bfloat16", action="store_true", help="convert weights to bfloat16 format"
     )
     parser.add_argument(
         "--max_shard_size",
@@ -832,7 +834,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--safe_serialization",
         default=True,
-        action='store_true',
+        action="store_true",
         help="Whether to save the model using `safetensors` or the traditional PyTorch way (that uses `pickle`).",
     )
     parser.add_argument(
@@ -843,9 +845,9 @@ if __name__ == "__main__":
         help="checkpoint tag used as a unique identifier for checkpoint. e.g., global_step1",
     )
     parser.add_argument(
-        "--exclude_frozen_parameters", action='store_true', help="exclude frozen parameters"
+        "--exclude_frozen_parameters", action="store_true", help="exclude frozen parameters"
     )
-    parser.add_argument("-d", "--debug", action='store_true', help="enable debug")
+    parser.add_argument("-d", "--debug", action="store_true", help="enable debug")
     args = parser.parse_args()
 
     debug = args.debug

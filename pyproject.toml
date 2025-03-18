@@ -65,6 +65,23 @@ allow-direct-references = true
 distribution = true
 
 
+[tool.pdm.scripts]
+lint.cmd = [
+  "ruff",
+  #
+  "check",
+]
+typecheck.cmd = [
+  "mypy",
+  # options
+  # "--install-types",
+  "--non-interactive",
+  # dirs
+  "src/cogkit",
+  "tests",
+]
+
+
 [tool.ruff]
 # https://github.com/astral-sh/ruff/issues/8627
 exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "dist"]

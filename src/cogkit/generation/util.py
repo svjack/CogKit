@@ -6,44 +6,65 @@ from diffusers import (
     CogVideoXImageToVideoPipeline,
     CogVideoXPipeline,
     CogVideoXVideoToVideoPipeline,
-    DiffusionPipeline,
+    CogView4Pipeline,
 )
+
+TVideoPipeline = CogVideoXPipeline | CogVideoXImageToVideoPipeline | CogVideoXVideoToVideoPipeline
+TPipeline = CogView4Pipeline | TVideoPipeline
 
 
 def _guess_cogview_resolution(
-    pipeline: DiffusionPipeline, height: int | None = None, width: int | None = None
+    pipeline: CogView4Pipeline, height: int | None = None, width: int | None = None
 ) -> tuple[int, int]:
-    # TODO: completes this
-    raise NotImplementedError
+    default_height = pipeline.transformer.config.sample_size * pipeline.vae_scale_factor
+    default_width = pipeline.transformer.config.sample_size * pipeline.vae_scale_factor
+    if height is None and width is None:
+        return default_height, default_width
+
+    if height is None:
+        height = int(width * default_height / default_width)
+
+    if width is None:
+        width = int(height * default_width / default_height)
+    # FIXME: checks if `(height, width)` is reasonable. If not, warn users and return the default/recommend resolution when required.
+    return height, width
 
 
 def _guess_cogvideox_resolution(
-    pipeline: DiffusionPipeline, height: int | None, width: int | None = None
+    pipeline: TVideoPipeline, height: int | None, width: int | None = None
 ) -> tuple[int, int]:
-    # TODO: completes this
-    raise NotImplementedError
+    default_height = pipeline.transformer.config.sample_height * pipeline.vae_scale_factor_spatial
+    default_width = pipeline.transformer.config.sample_width * pipeline.vae_scale_factor_spatial
+
+    if height is None and width is None:
+        return default_height, default_width
+
+    if height is None:
+        height = int(width * default_height / default_width)
+
+    if width is None:
+        width = int(height * default_width / default_height)
+
+    # FIXME: checks if `(height, width)` is reasonable. If not, warn users and return the default/recommend resolution when required.
+    return height, width
 
 
 def guess_resolution(
-    pipeline: DiffusionPipeline,
+    pipeline: TPipeline,
     height: int | None = None,
     width: int | None = None,
 ) -> tuple[int, int]:
-    pl_cls_name = pipeline.__class__.__name__
-    if pl_cls_name.startswith("CogView"):
+    if isinstance(pipeline, CogView4Pipeline):
         return _guess_cogview_resolution(pipeline, height=height, width=width)
-    if pl_cls_name.startswith("CogVideoX"):
+    if isinstance(pipeline, TVideoPipeline):
         return _guess_cogvideox_resolution(pipeline, height=height, width=width)
 
-    err_msg = f"The pipeline '{pl_cls_name}' is not supported."
+    err_msg = f"The pipeline '{pipeline.__class__.__name__}' is not supported."
     raise ValueError(err_msg)
 
 
-def before_generation(pipeline: DiffusionPipeline):
-    if isinstance(
-        pipeline,
-        CogVideoXPipeline | CogVideoXImageToVideoPipeline | CogVideoXVideoToVideoPipeline,
-    ):
+def before_generation(pipeline: TPipeline) -> None:
+    if isinstance(pipeline, TVideoPipeline):
         pipeline.scheduler = CogVideoXDPMScheduler.from_config(
             pipeline.scheduler.config, timestep_spacing="trailing"
         )
