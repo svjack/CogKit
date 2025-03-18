@@ -28,12 +28,12 @@ from cogkit.utils import cast_to_torch_dtype, guess_generation_mode
 @click.option(
     "--image_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the image to guide the video generation (NOT EFFECTIVE in the image generation task)",
+    help="the image to guide the video generation (for i2v generation task)",
 )
 @click.option(
     "--video_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the video to guide the video generation (NOT EFFECTIVE in the image generation task)",
+    help="the video to guide the video generation (for v2v generation task)",
 )
 @click.option(
     "--dtype",
@@ -41,7 +41,6 @@ from cogkit.utils import cast_to_torch_dtype, guess_generation_mode
     default="bfloat16",
     help="the data type used in the computation",
 )
-# FIXME: support model_id?
 @click.option(
     "--transformer_path",
     type=click.Path(file_okay=False, exists=True),
@@ -65,18 +64,6 @@ from cogkit.utils import cast_to_torch_dtype, guess_generation_mode
     type=click.IntRange(min=1),
     help="the width of the generated image/video",
 )
-@click.option(
-    "--num_frames",
-    type=click.IntRange(min=1),
-    default=81,
-    help="the number of the frames in the generated video (NOT EFFECTIVE in the image generation task)",
-)
-@click.option(
-    "--fps",
-    type=click.IntRange(min=1),
-    default=16,
-    help="the frames per second of the generated video (NOT EFFECTIVE in the image generation task)",
-)
 @click.option("--seed", type=int, help="the seed for reproducibility")
 @click.argument("prompt")
 @click.argument("model_id_or_path")
@@ -96,8 +83,8 @@ def inference(
     # * params for output
     height: int | None = None,
     width: int | None = None,
-    num_frames: int = 81,
-    fps: int = 16,
+    num_frames: int | None = None,
+    fps: int | None = None,
     seed: int = 42,
 ) -> None:
     """
@@ -108,8 +95,8 @@ def inference(
     - model_id_or_path (str): The path of the pre-trained model to be used.
     - task (GenerationMode): The type of generation task to be performed (e.g., 't2v', 'i2v', 'v2v', 't2i').
     - output_file (str | Path): The path where the generated image or video will be saved.
-    - image_file (str | Path | None): The path of the image to be used as the background of the video (if applicable).
-    - video_file (str | Path | None): The path of the video to be used as the background of the video (if applicable).
+    - image_file (str | Path | None): The path of the image (for i2v generation task).
+    - video_file (str | Path | None): The path of the video (for v2v generation task).
     - dtype (torch.dtype): The data type for computation (default is torch.bfloat16).
     - lora_model_id_or_path (str | None): The path of the LoRA weights to be used.
     - lora_rank (int): The rank of the LoRA weights.
