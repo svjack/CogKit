@@ -101,7 +101,7 @@ def inference(
     seed: int = 42,
 ) -> None:
     """
-    Generates a video based on the given prompt and saves it to the specified path.
+    Generates an image (or video) based on the given prompt.
 
     Parameters:
     - prompt (str): The description of the video to be generated.
