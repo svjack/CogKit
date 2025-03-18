@@ -1,11 +1,10 @@
 ---
 ---
-<!-- FIXME: change cogmodels to cogkit-->
 
 <!-- TODO: check this doc -->
 # Command-Line Interface
 
-CogModels provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
+`cogkit` provides a powerful command-line interface (CLI) that allows you to perform various tasks without writing Python code. This guide covers the available commands and their usage.
 
 ## Overview
 

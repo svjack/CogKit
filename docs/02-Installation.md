@@ -3,7 +3,7 @@
 
 # Installation
 
-Cogkit can be installed using pip. We recommend using a virtual environment to avoid conflicts with other packages.
+`cogkit` can be installed using pip. We recommend using a virtual environment to avoid conflicts with other packages.
 
 ## Requirements
 
@@ -21,7 +21,6 @@ python -m venv cogkit-env
 source cogkit-env/bin/activate
 
 # Or using conda
-conda create -n cogkit-env python=3.8
 conda create -n cogkit-env python=3.10
 conda activate cogkit-env
 ```
@@ -30,13 +29,13 @@ conda activate cogkit-env
 
 Please refer to the [PyTorch installation guide](https://pytorch.org/get-started/locally/) for instructions on installing PyTorch according to your system.
 
-### Install Cogkit
+### Install `cogkit`
 <!-- FIXME: Install via pip install cogkit or via clone&local install? -->
 
-1. Install Cogkit:
+1. Install `cogkit`:
 
    ```bash
-   pip install cogkit@git+https://github.com/thudm/cogkit.git
+   pip install cogkit@git+https://github.com/THUDM/cogkit.git
    ```
 
 2. Optional: for video tasks (e.g. text-to-video), install additional dependencies:
