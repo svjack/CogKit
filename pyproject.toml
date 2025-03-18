@@ -1,8 +1,12 @@
 [project]
-name = "cogkit"
-dynamic = ["version"]
-# TODO: adds a short description, will be displayed on the github page
-description = "CogView/CogVideo"
+name = 'cogkit'
+dynamic = ['version']
+description = ''
+readme = 'README.md'
+requires-python = '>=3.10'
+license = 'Apache2.0'
+license-files = ["LICENSE"]
+keywords = []
 authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
 # TODO: adds maintainers
 # maintainers = []
