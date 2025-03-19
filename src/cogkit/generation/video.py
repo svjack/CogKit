@@ -41,6 +41,7 @@ def generate_video(
     model_id_or_path: str,
     output_file: str | Path,
     image_file: str | Path | None = None,
+    # FIXME: whether to support v2v pipeline
     video_file: str | Path | None = None,
     # * params for model loading
     dtype: torch.dtype = torch.bfloat16,

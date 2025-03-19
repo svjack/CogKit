@@ -13,34 +13,28 @@ TPipeline = CogView4Pipeline | TVideoPipeline
 
 
 def _is_cogvideox1_0(pipeline: TVideoPipeline) -> bool:
-    if isinstance(pipeline, CogVideoXPipeline) or isinstance(
-        pipeline, CogVideoXImageToVideoPipeline
-    ):
-        if (
+    # ! very hacky
+    if isinstance(pipeline, CogVideoXPipeline | CogVideoXImageToVideoPipeline):
+        return (
             not hasattr(pipeline.transformer.config, "patch_size_t")
             or pipeline.transformer.config.patch_size_t is None
-        ):
-            return True
-        else:
-            return False
-    else:
-        raise ValueError(
-            f"Unsupported pipeline type in `_is_cogvideox1_0`, pipeline type: {type(pipeline)}"
         )
+
+    raise ValueError(
+        f"Unsupported pipeline type in `_is_cogvideox1_0`, pipeline type: {type(pipeline)}"
+    )
 
 
 def _is_cogvideox1_5(pipeline: TVideoPipeline) -> bool:
-    if isinstance(pipeline, CogVideoXPipeline) or isinstance(
-        pipeline, CogVideoXImageToVideoPipeline
-    ):
+    # ! very hacky
+    if isinstance(pipeline, CogVideoXPipeline | CogVideoXImageToVideoPipeline):
         return (
             hasattr(pipeline.transformer.config, "patch_size_t")
             and pipeline.transformer.config.patch_size_t == 2
         )
-    else:
-        raise ValueError(
-            f"Unsupported pipeline type in `_is_cogvideox1_5`, pipeline type: {type(pipeline)}"
-        )
+    raise ValueError(
+        f"Unsupported pipeline type in `_is_cogvideox1_5`, pipeline type: {type(pipeline)}"
+    )
 
 
 def _guess_cogview_resolution(
@@ -57,16 +51,15 @@ def _guess_cogview_resolution(
     if width is None:
         width = int(height * default_width / default_height)
 
-    ### Check resolution according to the model card
+    # * Check resolution according to the model card
     assert height is not None and width is not None
     if isinstance(pipeline, CogView4Pipeline):
         assert height % 32 == 0 and width % 32 == 0, "height and width must be divisible by 32"
-    else:
-        raise ValueError(
-            f"Unsupported pipeline type in `_guess_cogview_resolution`, pipeline type: {type(pipeline)}"
-        )
+        return height, width
 
-    return height, width
+    raise ValueError(
+        f"Unsupported pipeline type in `_guess_cogview_resolution`, pipeline type: {type(pipeline)}"
+    )
 
 
 def _guess_cogvideox_resolution(
@@ -82,7 +75,7 @@ def _guess_cogvideox_resolution(
     elif width is None:
         width = int(height * default_width / default_height)
 
-    ##### Check resolution according to the model card
+    # * Check resolution according to the model card
     if _is_cogvideox1_0(pipeline):
         assert height == 480 and width == 720, "height and width must be 480 and 720"
     elif _is_cogvideox1_5(pipeline):
@@ -92,9 +85,9 @@ def _guess_cogvideox_resolution(
             minv = min(height, width)
             maxv = max(height, width)
             assert minv == 768, "minimum value in (height, width) must be 768"
-            assert (
-                768 <= maxv <= 1360
-            ), "maximum value in (height, width) must range from 768 to 1360"
+            assert 768 <= maxv <= 1360, (
+                "maximum value in (height, width) must range from 768 to 1360"
+            )
             assert maxv % 16 == 0, "maximum value in (height, width) must be divisible by 16"
     else:
         raise ValueError(
@@ -102,6 +95,7 @@ def _guess_cogvideox_resolution(
         )
 
     return height, width
+
 
 def guess_resolution(
     pipeline: TPipeline,
