@@ -15,9 +15,8 @@ RUN apt-get update && \
 REPO_NAME=cogkit
 WORKDIR /app
 
-# refactor url later (and maybe repo name)
-RUN git clone https://gitlab.glm.ai/open-source/${REPO_NAME}
-WORKDIR ${REPO_NAME}
+RUN git https://github.com/thudm/CogKit
+WORKDIR CogKit
 
 RUN pip install uv
 RUN uv pip install . --system

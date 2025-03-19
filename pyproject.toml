@@ -9,8 +9,7 @@ dynamic = ['version']
 description = ''
 readme = 'README.md'
 requires-python = '>=3.10'
-license = 'Apache2.0'
-license-files = ["LICENSE"]
+License-File = "LICENSE"
 keywords = []
 authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
 classifiers = [
