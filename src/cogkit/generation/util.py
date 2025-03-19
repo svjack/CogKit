@@ -103,7 +103,6 @@ def _guess_cogvideox_resolution(
 
     return height, width
 
-
 def guess_resolution(
     pipeline: TPipeline,
     height: int | None = None,
