@@ -30,7 +30,10 @@ api = [
   "pydantic-settings~=2.8",
   "python-dotenv~=1.0",
 ]
-video = ["opencv-python-headless~=4.11"]
+video = [
+  "decord~=0.6.0",
+  "opencv-python-headless~=4.11",
+]
 
 # TODO: adds project urls
 # [project.urls]

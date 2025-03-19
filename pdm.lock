@@ -5,7 +5,7 @@
 groups = ["default", "api", "dev", "torch", "video"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:677190ece5275f8a959cfc03fa8294151e491e0a170814c376934a40bfcd5ca7"
+content_hash = "sha256:570c4964b2700e39406b04af1c5c9935b14486d6f639d5080cfe0308b33af2fa"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -319,6 +319,19 @@ dependencies = [
 files = [
     {file = "datasets-3.4.0-py3-none-any.whl", hash = "sha256:35ef5182bddd38f7aa774d9f33c3e8b8e9c9c7ea41b4b7969fde431919cb556b"},
     {file = "datasets-3.4.0.tar.gz", hash = "sha256:f3defae5d9c79ff586db3b17389fdde01704ffea015293a050d7e8ab6816bad8"},
+]
+
+[[package]]
+name = "decord"
+version = "0.6.0"
+summary = "Decord Video Loader"
+groups = ["video"]
+dependencies = [
+    "numpy>=1.14.0",
+]
+files = [
+    {file = "decord-0.6.0-py3-none-manylinux2010_x86_64.whl", hash = "sha256:51997f20be8958e23b7c4061ba45d0efcd86bffd5fe81c695d0befee0d442976"},
+    {file = "decord-0.6.0-py3-none-win_amd64.whl", hash = "sha256:02665d7c4f1193a330205a791bc128f7e108eb6ae5b67144437a02f700943bad"},
 ]
 
 [[package]]
