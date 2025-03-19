@@ -12,24 +12,28 @@ authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
 dependencies = [
   "click~=8.1",
   "datasets~=3.4",
+  "deepspeed~=0.16.4",
   "diffusers @ git+https://github.com/huggingface/diffusers.git",
   "imageio-ffmpeg~=0.6.0",
   "imageio~=2.37",
+  "peft~=0.14.0",
   "pydantic~=2.10",
   "sentencepiece==0.2.0",
   "transformers~=4.49",
+  "wandb~=0.19.8",
 ]
 
 [project.optional-dependencies]
 torch = ["numpy", "torch", "torchvision"]
-
-# TODO: adds project urls
-# [project.urls]
 api = [
     "fastapi[standard]~=0.115.11",
     "pydantic-settings~=2.8",
     "python-dotenv~=1.0",
 ]
+video = ["opencv-python-headless~=4.11"]
+
+# TODO: adds project urls
+# [project.urls]
 
 
 [project.scripts]
