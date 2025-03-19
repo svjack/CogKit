@@ -19,7 +19,7 @@ def np_to_base64(image_array: np.ndarray) -> str:
     base64_str = base64.b64encode(byte_stream).decode('utf-8')
     return base64_str
 
-@router.post("/generations", response_class=ImagesResponse)
+@router.post("/generations")
 def generations(
     image_generation: Annotated[ImageGenerationService, Depends(get_image_generation_service)],
     params: ImageGenerationParams,
