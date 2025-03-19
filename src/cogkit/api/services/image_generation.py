@@ -17,12 +17,12 @@ class ImageGenerationService(object):
             raise ValueError(f"Model {model} not found")
         width, height = list(map(int,size.split('x')))
         images_list = self._models["cogview-4"](
-        prompt=prompt,
-        guidance_scale=3.5,
-        num_images_per_prompt=num_images,
-        num_inference_steps=50,
-        width=width,
-        height=height,
-        output_type="np"
-        ).images
+            prompt=prompt,
+            guidance_scale=3.5,
+            num_images_per_prompt=num_images,
+            num_inference_steps=50,
+            width=width,
+            height=height,
+            output_type="np"
+            ).images
         return images_list
