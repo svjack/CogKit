@@ -9,7 +9,7 @@ Visit our [**Docs**](https://thudm.github.io/CogKit) to start.
 ## Features
 
 - **Fine-tuning Methods**: Supports **LoRA** and **full-parameter fine-tuning** across various setups, including **single-machine single-GPU**, **single-machine multi-GPU**, and **multi-machine multi-GPU** configurations.
-- **Inference**: Provides an **OpenAI-style API** (T2I Only), a **GUI**, and a **command-line interface** for seamless model deployment.
+- **Inference**: Provides an **OpenAI-style API** (T2I Only) and a **command-line interface** for seamless model deployment.
 - **Embed Cache**: Optimizes GPU memory usage to enhance efficiency during inference.
 
 ## Roadmap

@@ -12,12 +12,11 @@ RUN apt-get update && \
 
 
 ###### install cogkit ######
-REPO_NAME=cogkit
 WORKDIR /app
 
 # refactor url later (and maybe repo name)
-RUN git clone https://github.com/THUDM/${REPO_NAME}.git
-WORKDIR ${REPO_NAME}
+RUN git clone https://github.com/THUDM/CogKit.git
+WORKDIR CogKit
 
 # TODO: use `pdm sync`
 RUN pip install uv
