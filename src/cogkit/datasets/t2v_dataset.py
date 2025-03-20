@@ -11,12 +11,12 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from typing_extensions import override
 
-from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
+from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
 
 from .utils import load_prompts, load_videos, preprocess_video_with_resize, get_prompt_embedding
 
 if TYPE_CHECKING:
-    from cogkit.finetune.diffusion.trainer import DiffusionTrainer
+    from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
 
 logger = get_logger(LOG_NAME, LOG_LEVEL)
 

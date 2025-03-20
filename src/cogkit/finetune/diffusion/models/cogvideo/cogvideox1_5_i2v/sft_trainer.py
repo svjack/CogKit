@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from cogkit.finetune import register
 
 from ..cogvideox_i2v.sft_trainer import CogVideoXI2VSftTrainer

@@ -22,7 +22,7 @@ from ..utils import (
     unload_model,
 )
 from .constants import LOG_LEVEL, LOG_NAME
-from .diff_datasets import I2VDatasetWithResize, T2VDatasetWithResize, T2IDatasetWithResize
+from .diff_datasets import I2VDatasetWithResize, T2IDatasetWithResize, T2VDatasetWithResize
 from .diff_datasets.utils import (
     load_images,
     load_prompts,

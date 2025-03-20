@@ -6,7 +6,6 @@ import time
 
 import click
 
-from cogkit.cli.finetune import finetune
 from cogkit.cli.inference import inference
 from cogkit.cli.launch import launch
 from cogkit.logging import LOG_FORMAT, get_logger, set_log_level
@@ -38,4 +37,3 @@ def cli(ctx: click.Context, verbose: int) -> None:
 
 cli.add_command(inference)
 cli.add_command(launch)
-cli.add_command(finetune)

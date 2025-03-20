@@ -1,5 +1,6 @@
-import hashlib
-import torchvision.transforms as transforms
+# -*- coding: utf-8 -*-
+
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Tuple
 
@@ -15,20 +16,21 @@ from typing_extensions import override
 from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
 
 from .utils import (
+    get_prompt_embedding,
     load_images,
     load_images_from_videos,
     load_prompts,
     load_videos,
     preprocess_image_with_resize,
     preprocess_video_with_resize,
-    get_prompt_embedding,
 )
 
 if TYPE_CHECKING:
     from cogkit.finetune.diffusion.trainer import DiffusionTrainer
 
-# Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
-# Very few bug reports but it happens. Look in decord Github issues for more relevant information.
+# ! Must be imported after `torch`.
+# ! Otherwise, a nasty segmentation fault, or stack smashing error may occur.
+# ! See: https://github.com/dmlc/decord/issues/293
 import decord  # isort:skip
 
 decord.bridge.set_bridge("torch")

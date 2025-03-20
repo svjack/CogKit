@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from cogkit.finetune import register
 
 from ..cogvideox_t2v.lora_trainer import CogVideoXT2VLoraTrainer

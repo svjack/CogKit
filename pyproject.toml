@@ -1,47 +1,60 @@
-[build-system]
-requires = ['hatch-vcs>=0.3.0', 'hatchling>=1.24.2,<1.25']
-build-backend = 'hatchling.build'
-
-
 [project]
 name = 'cogkit'
 dynamic = ['version']
 description = ''
 readme = 'README.md'
 requires-python = '>=3.10'
-License-File = "LICENSE"
+license-files = ["LICENSE"]
 keywords = []
 authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
-classifiers = [
-  'Development Status :: 4 - Beta',
-  'Programming Language :: Python :: 3.10',
-  'Programming Language :: Python :: 3.11',
-  'Programming Language :: Python :: 3.12',
-  'Programming Language :: Python :: Implementation :: CPython',
-  'Programming Language :: Python :: Implementation :: PyPy',
-  'Programming Language :: Python',
-]
+# TODO: adds maintainers
+# maintainers = []
 dependencies = [
-  "accelerate~=1.3",
   "click~=8.1",
-  "datasets~=3.2",
-  "deepspeed~=0.16.3",
-  "diffusers@git+https://github.com/huggingface/diffusers.git",
+  "datasets~=3.4",
+  "deepspeed~=0.16.4",
+  "diffusers @ git+https://github.com/huggingface/diffusers.git",
   "imageio-ffmpeg~=0.6.0",
   "imageio~=2.37",
   "peft~=0.14.0",
   "pydantic~=2.10",
-  "sentencepiece~=0.2.0",
+  "sentencepiece==0.2.0",
   "transformers~=4.49",
-  "wandb~=0.19.6",
+  "wandb~=0.19.8",
 ]
 
 [project.optional-dependencies]
 torch = ["numpy", "torch", "torchvision"]
-video = ["decord~=0.6.0", "opencv-python-headless~=4.11"]
+api = [
+  "fastapi[standard]~=0.115.11",
+  "pydantic-settings~=2.8",
+  "python-dotenv~=1.0",
+]
+video = [
+  "decord~=0.6.0",
+  "opencv-python-headless~=4.11",
+]
+
+# TODO: adds project urls
+# [project.urls]
+
 
 [project.scripts]
 cogkit = "cogkit.cli:cli"
+
+
+[build-system]
+requires = [
+  "hatchling",
+  # * uses vcs (e.g. git) to determine the package version
+  "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+
+[dependency-groups]
+dev = ["mypy~=1.15", "ruff~=0.11.0"]
+
 
 [tool.hatch.version]
 source = 'vcs'
@@ -60,25 +73,36 @@ version-file = 'src/cogkit/_version.py'
 allow-direct-references = true
 
 
+[tool.pdm]
+distribution = true
+
+
+[tool.pdm.scripts]
+lint.cmd = [
+  "ruff",
+  #
+  "check",
+]
+typecheck.cmd = [
+  "mypy",
+  # options
+  # "--install-types",
+  "--non-interactive",
+  # dirs
+  "src/cogkit",
+  "tests",
+]
+
+
 [tool.ruff]
-exclude = ['.git', '.mypy_cache', '.ruff_cache', '.venv', 'dist']
-target-version = 'py310'
+# https://github.com/astral-sh/ruff/issues/8627
+exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "dist"]
+target-version = "py310"
 line-length = 100
+indent-width = 4
+
 
 [tool.ruff.format]
-line-ending = 'lf'
-quote-style = 'preserve'
-
-[tool.ruff.lint]
-select = ["E", "W"]
-ignore = [
-  "E501",
-  "E999",
-  "EXE001",
-  "F401",
-  "F403",
-  "F841",
-  "TID252",
-  "UP009",
-  "W293",
-]
+line-ending = "lf"
+quote-style = "double"
+indent-style = "space"

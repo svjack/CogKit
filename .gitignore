@@ -241,7 +241,13 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/macos
 
+# * hatch-vcs
 src/cogkit/_version.py
+
+# * pdm
+.pdm-python
+
+# * a temporary directory to store files you do not wish to share.
 tmp/
 
 **/*.safetensor
@@ -254,7 +260,6 @@ tmp/
 **/*foo*
 **/train_result
 
-**/uv.lock
 
 webdoc/
 **/wandb/
