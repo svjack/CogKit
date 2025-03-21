@@ -63,7 +63,7 @@ VALIDATION_ARGS=(
 )
 
 # Combine all arguments and launch training
-accelerate launch --config_file ./accelerate_config.yaml train.py \
+accelerate launch --config_file ../configs/accelerate_config.yaml train.py \
     "${MODEL_ARGS[@]}" \
     "${OUTPUT_ARGS[@]}" \
     "${DATA_ARGS[@]}" \

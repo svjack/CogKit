@@ -55,7 +55,6 @@ CHECKPOINT_ARGS=(
 VALIDATION_ARGS=(
     --do_validation true   # ["true", "false"]
     --validation_steps 10  # should be multiple of checkpointing_steps
-    --gen_fps 16
 )
 
 # Combine all arguments and launch training

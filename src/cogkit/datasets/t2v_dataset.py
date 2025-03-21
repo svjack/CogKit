@@ -1,4 +1,3 @@
-import hashlib
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -11,12 +10,12 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from typing_extensions import override
 
-from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
+from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
 
-from .utils import load_prompts, load_videos, preprocess_video_with_resize, get_prompt_embedding
+from .utils import get_prompt_embedding, preprocess_video_with_resize
 
 if TYPE_CHECKING:
-    from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
+    from cogkit.finetune.diffusion.trainer import DiffusionTrainer
 
 logger = get_logger(LOG_NAME, LOG_LEVEL)
 

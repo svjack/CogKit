@@ -249,7 +249,7 @@ class CogVideoXI2VLoraTrainer(DiffusionTrainer):
         Return the data that needs to be saved. For videos, the data format is List[PIL],
         and for images, the data format is PIL
         """
-        prompt, prompt_embedding, image, video = (
+        prompt, prompt_embedding, image, _ = (
             eval_data["prompt"],
             eval_data["prompt_embedding"],
             eval_data["image"],

@@ -212,7 +212,7 @@ class Cogview4Trainer(DiffusionTrainer):
         Return the data that needs to be saved. For images, the data format is PIL
         """
         prompt = eval_data["prompt"]
-        prompt_embedding = eval_data["prompt_embedding"]
+        _ = eval_data["prompt_embedding"]
 
         image_generate = pipe(
             height=self.state.train_resolution[0],

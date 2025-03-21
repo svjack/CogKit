@@ -6,12 +6,10 @@ from PIL import Image
 import torch
 from accelerate.logging import get_logger
 from datasets import load_dataset
-from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms
 from typing_extensions import override
 
-from cogmodels.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
+from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
 
 from .utils import (
     preprocess_image_with_resize,
@@ -20,7 +18,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from cogmodels.finetune.diffusion.trainer import DiffusionTrainer
+    from cogkit.finetune.diffusion.trainer import DiffusionTrainer
 
 # Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
 # Very few bug reports but it happens. Look in decord Github issues for more relevant information.
