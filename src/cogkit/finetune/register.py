@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
-from cogkit.finetune import BaseTrainer
+# using TYPE_CHECKING to avoid circular import
+if TYPE_CHECKING:
+    from cogkit.finetune import BaseTrainer
 
-SUPPORTED_MODELS: dict[str, dict[str, BaseTrainer]] = {}
+SUPPORTED_MODELS: dict[str, dict[str, "BaseTrainer"]] = {}
 
 
 def register(
     model_name: str,
     training_type: Literal["lora", "sft"],
-    trainer_cls: BaseTrainer,
+    trainer_cls: "BaseTrainer",
 ):
     """Register a model and its associated functions for a specific training type.
 
@@ -43,7 +45,7 @@ def show_supported_models():
             print(f"  • {training_type}")
 
 
-def get_model_cls(model_type: str, training_type: Literal["lora", "sft"]) -> BaseTrainer:
+def get_model_cls(model_type: str, training_type: Literal["lora", "sft"]) -> "BaseTrainer":
     """Get the trainer class for a specific model and training type."""
     if model_type not in SUPPORTED_MODELS:
         print(f"\nModel '{model_type}' is not supported.")

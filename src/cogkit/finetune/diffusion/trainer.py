@@ -1,4 +1,3 @@
-import hashlib
 import json
 from typing import Any
 
@@ -7,29 +6,21 @@ import wandb
 from accelerate.utils import (
     gather_object,
 )
-from diffusers.pipelines import DiffusionPipeline
-from diffusers.utils.export_utils import export_to_video
 from PIL import Image
 from typing_extensions import override
 
+from cogkit.datasets import I2VDatasetWithResize, T2IDatasetWithResize, T2VDatasetWithResize
 from cogkit.finetune.base import BaseTrainer
+from diffusers.pipelines import DiffusionPipeline
+from diffusers.utils.export_utils import export_to_video
 
 from ..utils import (
     cast_training_params,
     free_memory,
     get_memory_statistics,
-    string_to_filename,
     unload_model,
 )
 from .constants import LOG_LEVEL, LOG_NAME
-from .diff_datasets import I2VDatasetWithResize, T2IDatasetWithResize, T2VDatasetWithResize
-from .diff_datasets.utils import (
-    load_images,
-    load_prompts,
-    load_videos,
-    preprocess_image_with_resize,
-    preprocess_video_with_resize,
-)
 from .schemas import DiffusionArgs, DiffusionComponents, DiffusionState
 
 

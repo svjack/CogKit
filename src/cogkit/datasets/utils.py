@@ -6,7 +6,6 @@ from typing import Callable
 import cv2
 import numpy as np
 import torch
-import torchvision.transforms as transforms
 from PIL import Image
 from safetensors.torch import load_file, save_file
 
