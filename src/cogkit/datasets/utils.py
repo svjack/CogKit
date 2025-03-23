@@ -216,19 +216,12 @@ def get_prompt_embedding(
 def get_image_embedding(
     encode_fn: Callable, image: Image.Image, cache_dir: Path, logger: logging.Logger
 ) -> torch.Tensor:
-    """Get encoded image from cache or create new one if not exists.
-
-    Args:
-        encode_fn: Function to project image to embedding.
-        image: Image to be embedded
-        cache_dir: Base directory for caching embeddings
-        logger: Logger instance for logging messages
-
-    Returns:
-        torch.Tensor: Encoded image with shape [C, H, W]
-    """
     encoded_images_dir = cache_dir / "encoded_images"
     encoded_images_dir.mkdir(parents=True, exist_ok=True)
+
+    if not hasattr(image, "filename"):
+        logger.warning("Image object does not have filename attribute, skipping caching.")
+        return encode_fn(image).to("cpu")
 
     filename = Path(image.filename).stem
     filename_hash = str(hashlib.sha256(filename.encode()).hexdigest())
@@ -243,8 +236,6 @@ def get_image_embedding(
     else:
         encoded_image = encode_fn(image)
         encoded_image = encoded_image.to("cpu")
-
-        # shape of encoded_image: [C, H, W]
         save_file({"encoded_image": encoded_image}, encoded_image_path)
         logger.info(
             f"Saved encoded image to {encoded_image_path}",
