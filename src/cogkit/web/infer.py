@@ -20,7 +20,6 @@ def convert_prompt(
     prompt: str,
     retry_times: int = 5,
 ) -> str:
-    os.environ["OPENAI_API_KEY"] = "e514a40a99d3cf8e1f245b185c5fd846.raSM1m8kUH3INmEJ"
     client = OpenAI(base_url="https://open.bigmodel.cn/api/paas/v4")
 
     prompt = clean_string(prompt)
