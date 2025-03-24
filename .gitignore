@@ -263,3 +263,4 @@ tmp/
 
 webdoc/
 **/wandb/
+test*

@@ -15,6 +15,7 @@ class ImageGenerationParams(RequestParams):
     ] = "1024x1024"
     num_inference_steps: int = 50
     guidance_scale: float = 3.5
+    lora_path: str | None = None
     user: str | None = None
     # ! unsupported parameters
     # quality: Literal["standard", "hd"] = "standard"

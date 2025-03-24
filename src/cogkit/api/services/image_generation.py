@@ -44,10 +44,14 @@ class ImageGenerationService(object):
         num_images: int,
         num_inference_steps: int = 50,
         guidance_scale: float = 3.5,
+        lora_path: str | None = None,
     ) -> list[np.ndarray]:
         if model not in self._models:
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
+
+        if lora_path is not None:
+            self._models[model].set_adapters(lora_path, adapter_names="test")
 
         # shape of image_np: (n, h, w, c)
         image_np = self._models[model](
