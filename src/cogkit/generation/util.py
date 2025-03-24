@@ -141,10 +141,8 @@ def before_generation(pipeline: TPipeline) -> None:
     # * enables CPU offload for the model.
     # turns off if you have multiple GPUs or enough GPU memory(such as H100) and it will cost less time in inference
     # and enable to("cuda")
-    # pipe.to("cuda")
-
-    # pipeline.to("cuda")
-    pipeline.enable_model_cpu_offload()
+    pipeline.to("cuda")
+    # pipeline.enable_model_cpu_offload()
     # pipe.enable_sequential_cpu_offload()
     if hasattr(pipeline, "vae"):
         pipeline.vae.enable_slicing()

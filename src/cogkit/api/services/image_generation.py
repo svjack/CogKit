@@ -36,7 +36,15 @@ class ImageGenerationService(object):
     def supported_models(self) -> list[str]:
         return list(self._models.keys())
 
-    def generate(self, model: str, prompt: str, size: str, num_images: int) -> list[np.ndarray]:
+    def generate(
+        self,
+        model: str,
+        prompt: str,
+        size: str,
+        num_images: int,
+        num_inference_steps: int = 50,
+        guidance_scale: float = 3.5,
+    ) -> list[np.ndarray]:
         if model not in self._models:
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
@@ -46,8 +54,8 @@ class ImageGenerationService(object):
             prompt=prompt,
             height=height,
             width=width,
-            num_inference_steps=50,
-            guidance_scale=3.5,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             num_images_per_prompt=num_images,
             output_type="np",
         ).images

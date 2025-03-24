@@ -35,9 +35,13 @@ def generations(
             status_code=HTTPStatus.NOT_FOUND,
             detail=f"The model `{params.model}` does not exist. Supported models: {image_generation.supported_models}",
         )
-    # TODO: add exception handling
     image_lst = image_generation.generate(
-        model=params.model, prompt=params.prompt, size=params.size, num_images=params.n
+        model=params.model,
+        prompt=params.prompt,
+        size=params.size,
+        num_images=params.n,
+        num_inference_steps=params.num_inference_steps,
+        guidance_scale=params.guidance_scale,
     )
     image_b64_lst = [ImageInResponse(b64_json=np_to_base64(image)) for image in image_lst]
     return ImagesResponse(created=int(time.time()), data=image_b64_lst)
