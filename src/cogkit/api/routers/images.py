@@ -42,6 +42,7 @@ def generations(
         num_images=params.n,
         num_inference_steps=params.num_inference_steps,
         guidance_scale=params.guidance_scale,
+        lora_path=params.lora_path,
     )
     image_b64_lst = [ImageInResponse(b64_json=np_to_base64(image)) for image in image_lst]
     return ImagesResponse(created=int(time.time()), data=image_b64_lst)
