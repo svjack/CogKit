@@ -1,8 +1,6 @@
 import os
 import re
-import threading
 import time
-from datetime import datetime, timedelta
 import gradio as gr
 from openai import OpenAI
 import base64
@@ -100,27 +98,6 @@ def generate_images(
         extra_body=extra_body,
     )
     return response.data
-
-
-# Function to clean up temporary files
-def delete_old_files():
-    while True:
-        now = datetime.now()
-        cutoff = now - timedelta(minutes=5)
-        os.makedirs("./gradio_tmp", exist_ok=True)
-        directories = ["./gradio_tmp"]
-        for directory in directories:
-            for filename in os.listdir(directory):
-                file_path = os.path.join(directory, filename)
-                if os.path.isfile(file_path):
-                    file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
-                    if file_mtime < cutoff:
-                        os.remove(file_path)
-        time.sleep(600)
-
-
-# Start the cleanup thread
-threading.Thread(target=delete_old_files, daemon=True).start()
 
 
 # Function to handle the inference process through the API
