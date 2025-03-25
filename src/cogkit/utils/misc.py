@@ -16,6 +16,7 @@ _SUPPORTED_PIPELINE = (
     "CogView4Pipeline",
     "CogVideoXPipeline",
     "CogVideoXImageToVideoPipeline",
+    "CogView4ControlPipeline"
 )
 
 
@@ -49,6 +50,29 @@ def _check_text_to_image_params(
     if image_file is not None or video_file is not None:
         _logger.warning(
             "The pipeline `%s` does not support image or video input. The image or/and video file(s) will be ignored.",
+            pl_cls_name,
+        )
+
+def _check_control_text_to_image_params(
+    pl_cls_name: str,
+    generation_mode: GenerationMode | None,
+    image_file: str | Path | None,
+    video_file: str | Path | None,
+) -> None:
+    if generation_mode is not None and generation_mode != GenerationMode.CtrlTextToImage:
+        _logger.warning(
+            "The pipeline `%s` does not support `%s` task. Will try the `%s` task.",
+            pl_cls_name,
+            generation_mode.value,
+            GenerationMode.CtrlTextToImage,
+        )
+    valid_img_file = _validate_file(image_file)
+    if valid_img_file is None:
+        err_msg = f"Image input is required in the control_image2video pipeline. Please provide a regular image file (image_file = {image_file})."
+        raise ValueError(err_msg)
+    if video_file is not None:
+        _logger.warning(
+            "The pipeline `%s` does not support video input. The video file(s) will be ignored.",
             pl_cls_name,
         )
 
@@ -95,7 +119,7 @@ def guess_generation_mode(
     if generation_mode is not None:
         generation_mode = GenerationMode(generation_mode)
 
-    if pl_cls_name.startswith("CogView"):
+    if pl_cls_name == "CogView4Pipeline":
         # TextToImage
         _check_text_to_image_params(pl_cls_name, generation_mode, image_file, video_file)
         return GenerationMode.TextToImage
@@ -104,6 +128,11 @@ def guess_generation_mode(
         _check_image_to_video_params(pl_cls_name, generation_mode, image_file, video_file)
         return GenerationMode.ImageToVideo
 
+    if pl_cls_name == "CogView4ControlPipeline":
+        # Control TextToImage
+        _check_control_text_to_image_params(pl_cls_name, generation_mode, image_file, video_file)
+        return GenerationMode.CtrlTextToImage
+    
     if image_file is not None:
         _logger.warning(
             "Pipeline `%s` does not support image input. Will ignore the image file.",

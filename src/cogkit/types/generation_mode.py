@@ -9,3 +9,4 @@ class GenerationMode(enum.Enum):
     ImageToVideo = "i2v"
     VideoToVideo = "v2v"
     TextToImage = "t2i"
+    CtrlTextToImage = "ct2i"

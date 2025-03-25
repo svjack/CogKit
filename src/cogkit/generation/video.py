@@ -16,6 +16,7 @@ from cogkit.generation.util import before_generation, guess_frames, guess_resolu
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
 from cogkit.utils import (
+    convert_prompt,
     load_lora_checkpoint,
     mkdir,
     rand_generator,
@@ -41,15 +42,19 @@ def generate_video(
     model_id_or_path: str,
     output_file: str | Path,
     image_file: str | Path | None = None,
+    # FIXME: whether to support v2v pipeline
+    video_file: str | Path | None = None,
     # * params for model loading
     dtype: torch.dtype = torch.bfloat16,
     transformer_path: str | None = None,
     lora_model_id_or_path: str | None = None,
     lora_rank: int = 128,
+    # * params for generated videos
     height: int | None = None,
     width: int | None = None,
     num_frames: int | None = None,
     fps: int | None = None,
+    # * params for the generation process
     num_inference_steps: int = 50,
     guidance_scale: float = 6.0,
     seed: int | None = 42,
@@ -60,7 +65,7 @@ def generate_video(
         pipeline.transformer.save_config(transformer_path)
         pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
     if lora_model_id_or_path is not None:
-        load_lora_checkpoint(pipeline, lora_model_id_or_path, lora_rank)
+        load_lora_checkpoint(lora_model_id_or_path, pipeline, lora_rank)
 
     height, width = guess_resolution(pipeline, height, width)
     num_frames, fps = guess_frames(pipeline, num_frames)
@@ -75,7 +80,6 @@ def generate_video(
         pipeline,
         height=height,
         width=width,
-        prompt=prompt,
         num_videos_per_prompt=1,
         num_inference_steps=num_inference_steps,
         num_frames=num_frames,
@@ -83,10 +87,16 @@ def generate_video(
         guidance_scale=guidance_scale,
         generator=rand_generator(seed),
     )
+
+    enhanced_prompt = convert_prompt(prompt, task, retry_times=5)
+
     if task == GenerationMode.TextToVideo:
-        pipeline_out = pipeline_fn()
+        pipeline_out = pipeline_fn(prompt=enhanced_prompt)
     elif task == GenerationMode.ImageToVideo:
-        pipeline_out = pipeline_fn(image=Image.open(image_file))
+        pipeline_out = pipeline_fn(
+            prompt=enhanced_prompt,
+            image=Image.open(image_file)
+            )
     else:
         err_msg = f"Unknown generation mode: {task.value}"
         raise ValueError(err_msg)

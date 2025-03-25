@@ -6,6 +6,7 @@ from cogkit.utils.dtype import cast_to_torch_dtype
 from cogkit.utils.lora import load_lora_checkpoint
 from cogkit.utils.misc import guess_generation_mode
 from cogkit.utils.path import mkdir, resolve_path
+from cogkit.utils.prompt import convert_prompt
 from cogkit.utils.random import rand_generator
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "mkdir",
     "resolve_path",
     "rand_generator",
+    "convert_prompt",
 ]

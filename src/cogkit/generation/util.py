@@ -5,11 +5,13 @@ from diffusers import (
     CogVideoXDPMScheduler,
     CogVideoXImageToVideoPipeline,
     CogVideoXPipeline,
+    CogView4ControlPipeline,
     CogView4Pipeline,
 )
 
 TVideoPipeline = CogVideoXPipeline | CogVideoXImageToVideoPipeline
 TPipeline = CogView4Pipeline | TVideoPipeline
+CogviewPipline = CogView4Pipeline | CogView4ControlPipeline
 
 
 def _is_cogvideox1_0(pipeline: TVideoPipeline) -> bool:
@@ -102,7 +104,7 @@ def guess_resolution(
     height: int | None = None,
     width: int | None = None,
 ) -> tuple[int, int]:
-    if isinstance(pipeline, CogView4Pipeline):
+    if isinstance(pipeline, CogviewPipline):
         return _guess_cogview_resolution(pipeline, height=height, width=width)
     if isinstance(pipeline, TVideoPipeline):
         return _guess_cogvideox_resolution(pipeline, height=height, width=width)
@@ -141,8 +143,10 @@ def before_generation(pipeline: TPipeline) -> None:
     # * enables CPU offload for the model.
     # turns off if you have multiple GPUs or enough GPU memory(such as H100) and it will cost less time in inference
     # and enable to("cuda")
-    pipeline.to("cuda")
-    # pipeline.enable_model_cpu_offload()
+    # pipe.to("cuda")
+
+    # pipeline.to("cuda")
+    pipeline.enable_model_cpu_offload()
     # pipe.enable_sequential_cpu_offload()
     if hasattr(pipeline, "vae"):
         pipeline.vae.enable_slicing()
