@@ -23,27 +23,23 @@ def generate_image(
     prompt: str,
     model_id_or_path: str,
     output_file: str | Path,
-    # * params for model loading
     dtype: torch.dtype = torch.bfloat16,
     transformer_path: str | None = None,
     lora_model_id_or_path: str | None = None,
     lora_rank: int = 128,
-    # * params for generated images
     height: int | None = None,
     width: int | None = None,
-    # * params for the generation process
     num_inference_steps: int = 50,
     guidance_scale: float = 3.5,
     seed: int | None = 42,
 ):
     pipeline = DiffusionPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype)
-
     if transformer_path is not None:
         pipeline.transformer.save_config(transformer_path)
         pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
 
     if lora_model_id_or_path is not None:
-        load_lora_checkpoint(lora_model_id_or_path, pipeline, lora_rank)
+        load_lora_checkpoint(pipeline, lora_model_id_or_path, lora_rank)
 
     height, width = guess_resolution(pipeline, height, width)
 
@@ -65,3 +61,4 @@ def generate_image(
     mkdir(output_file.parent)
     _logger.info("Saving the generated image to path '%s'.", os.fspath(output_file))
     batch_image[0].save(output_file)
+    return batch_image
