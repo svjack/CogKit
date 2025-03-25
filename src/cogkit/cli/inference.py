@@ -28,12 +28,7 @@ from cogkit.utils import cast_to_torch_dtype, guess_generation_mode
 @click.option(
     "--image_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the image to guide the video generation (for i2v generation task)",
-)
-@click.option(
-    "--video_file",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the video to guide the video generation (for v2v generation task)",
+    help="the image to guide the video generation (for i2v or ct2i generation task)",
 )
 @click.option(
     "--dtype",
@@ -92,8 +87,8 @@ def inference(
     - prompt (str): The description of the video to be generated.
     - model_id_or_path (str): The path of the pre-trained model to be used.
     - output_file (str | Path): The path where the generated image or video will be saved.
-    - task (GenerationMode): The type of generation task to be performed (e.g., 't2v', 'i2v', 'v2v', 't2i').
-    - image_file (str | Path | None): The path of the image (for i2v generation task).
+    - task (GenerationMode): The type of generation task to be performed (e.g., 't2v', 'i2v', 'v2v', 't2i', 'ct2i').
+    - image_file (str | Path | None): The path of the image (for i2v or ct2i generation task).
     - video_file (str | Path | None): The path of the video (for v2v generation task).
     - dtype (torch.dtype): The data type for computation (default is torch.bfloat16).
     - transformer_path (str | None): The path to load the transformer model.
@@ -117,7 +112,6 @@ def inference(
             model_id_or_path,
             output_file or "output.mp4",
             image_file,
-            video_file,
             dtype=dtype,
             transformer_path=transformer_path,
             lora_model_id_or_path=lora_model_id_or_path,
@@ -126,14 +120,18 @@ def inference(
             width=width,
             seed=seed,
         )
-    elif task in (GenerationMode.TextToImage,):
+    elif task in (
+        GenerationMode.TextToImage,
+        GenerationMode.CtrlTextToImage,
+        ):
         generate_image(
+            task,
             prompt,
             model_id_or_path,
             output_file or "output.png",
+            image_file,
             dtype=dtype,
             transformer_path=transformer_path,
-            lora_model_id_or_path=lora_model_id_or_path,
             height=height,
             width=width,
             seed=seed,
