@@ -2,6 +2,9 @@
 
 
 import numpy as np
+import os
+
+import torch
 from diffusers import CogView4Pipeline
 
 from cogkit.api.logging import get_logger
@@ -14,8 +17,14 @@ class ImageGenerationService(object):
     def __init__(self, settings: APISettings) -> None:
         self._models = {}
         if settings.cogview4_path is not None:
-            cogview4_pl = CogView4Pipeline.from_pretrained(settings.cogview4_path)
-            cogview4_pl.enable_model_cpu_offload()
+            cogview4_pl = CogView4Pipeline.from_pretrained(
+                settings.cogview4_path,
+                torch_dtype=torch.bfloat16 if settings.dtype == "bfloat16" else torch.float32,
+            )
+            if settings.offload_type == "cpu_model_offolad":
+                cogview4_pl.enable_model_cpu_offload()
+            else:
+                cogview4_pl.to("cuda")
             cogview4_pl.vae.enable_slicing()
             cogview4_pl.vae.enable_tiling()
             self._models["cogview-4"] = cogview4_pl
@@ -36,18 +45,33 @@ class ImageGenerationService(object):
     def supported_models(self) -> list[str]:
         return list(self._models.keys())
 
-    def generate(self, model: str, prompt: str, size: str, num_images: int) -> list[np.ndarray]:
+    def generate(
+        self,
+        model: str,
+        prompt: str,
+        size: str,
+        num_images: int,
+        num_inference_steps: int = 50,
+        guidance_scale: float = 3.5,
+        lora_path: str | None = None,
+    ) -> list[np.ndarray]:
         if model not in self._models:
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
+        if lora_path is not None:
+            adapter_name = os.path.basename(lora_path)
+            print(f"Loaded LORA weights from {adapter_name}")
+            self._models[model].load_lora_weights(lora_path)
+        else:
+            print("Unloading LORA weights")
+            self._models[model].unload_lora_weights()
 
-        # shape of image_np: (n, h, w, c)
         image_np = self._models[model](
             prompt=prompt,
             height=height,
             width=width,
-            num_inference_steps=50,
-            guidance_scale=3.5,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
             num_images_per_prompt=num_images,
             output_type="np",
         ).images

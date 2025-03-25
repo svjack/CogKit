@@ -41,19 +41,15 @@ def generate_video(
     model_id_or_path: str,
     output_file: str | Path,
     image_file: str | Path | None = None,
-    # FIXME: whether to support v2v pipeline
-    video_file: str | Path | None = None,
     # * params for model loading
     dtype: torch.dtype = torch.bfloat16,
     transformer_path: str | None = None,
     lora_model_id_or_path: str | None = None,
     lora_rank: int = 128,
-    # * params for generated videos
     height: int | None = None,
     width: int | None = None,
     num_frames: int | None = None,
     fps: int | None = None,
-    # * params for the generation process
     num_inference_steps: int = 50,
     guidance_scale: float = 6.0,
     seed: int | None = 42,
@@ -64,7 +60,7 @@ def generate_video(
         pipeline.transformer.save_config(transformer_path)
         pipeline.transformer = pipeline.transformer.from_pretrained(transformer_path)
     if lora_model_id_or_path is not None:
-        load_lora_checkpoint(lora_model_id_or_path, pipeline, lora_rank)
+        load_lora_checkpoint(pipeline, lora_model_id_or_path, lora_rank)
 
     height, width = guess_resolution(pipeline, height, width)
     num_frames, fps = guess_frames(pipeline, num_frames)

@@ -133,6 +133,7 @@ def inference(
             output_file or "output.png",
             dtype=dtype,
             transformer_path=transformer_path,
+            lora_model_id_or_path=lora_model_id_or_path,
             height=height,
             width=width,
             seed=seed,
