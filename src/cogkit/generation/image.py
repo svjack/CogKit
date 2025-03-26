@@ -18,6 +18,7 @@ _logger = get_logger(__name__)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
+
 def generate_image(
     task: GenerationMode,
     prompt: str,
@@ -39,7 +40,9 @@ def generate_image(
     if task == GenerationMode.TextToImage:
         pipeline = CogView4Pipeline.from_pretrained(model_id_or_path, torch_dtype=dtype).to(device)
     elif task == GenerationMode.CtrlTextToImage:
-        pipeline = CogView4ControlPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype).to(device)
+        pipeline = CogView4ControlPipeline.from_pretrained(model_id_or_path, torch_dtype=dtype).to(
+            device
+        )
     else:
         err_msg = f"Unknown generation mode: {task.value}"
         raise ValueError(err_msg)
@@ -70,11 +73,11 @@ def generate_image(
         batch_image = pipeline_fn(
             prompt=enhanced_prompt,
             control_image=Image.open(image_file),
-            ).images
+        ).images
     else:
         err_msg = f"Unknown generation mode: {task.value}"
         raise ValueError(err_msg)
-    
+
     output_file = resolve_path(output_file)
     mkdir(output_file.parent)
     _logger.info("Saving the generated image to path '%s'.", os.fspath(output_file))

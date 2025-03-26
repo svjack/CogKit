@@ -6,7 +6,7 @@ import os
 
 import torch
 from diffusers import CogView4Pipeline
-
+from cogkit.utils.lora import load_lora_checkpoint
 from cogkit.api.logging import get_logger
 from cogkit.api.settings import APISettings
 
@@ -29,14 +29,12 @@ class ImageGenerationService(object):
             cogview4_pl.vae.enable_tiling()
             self._models["cogview-4"] = cogview4_pl
 
-        ### Check if loaded models are supported
         for model in self._models.keys():
             if model not in settings._supported_models:
                 raise ValueError(
                     f"Registered model {model} not in supported list: {settings._supported_models}"
                 )
 
-        ### Check if all supported models are loaded
         for model in settings._supported_models:
             if model not in self._models:
                 _logger.warning(f"Model {model} not loaded")
@@ -61,7 +59,7 @@ class ImageGenerationService(object):
         if lora_path is not None:
             adapter_name = os.path.basename(lora_path)
             print(f"Loaded LORA weights from {adapter_name}")
-            self._models[model].load_lora_weights(lora_path)
+            load_lora_checkpoint(self._models[model], lora_path, 1)
         else:
             print("Unloading LORA weights")
             self._models[model].unload_lora_weights()

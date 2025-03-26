@@ -123,7 +123,7 @@ def inference(
     elif task in (
         GenerationMode.TextToImage,
         GenerationMode.CtrlTextToImage,
-        ):
+    ):
         generate_image(
             task,
             prompt,

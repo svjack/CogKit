@@ -16,7 +16,7 @@ _SUPPORTED_PIPELINE = (
     "CogView4Pipeline",
     "CogVideoXPipeline",
     "CogVideoXImageToVideoPipeline",
-    "CogView4ControlPipeline"
+    "CogView4ControlPipeline",
 )
 
 
@@ -52,6 +52,7 @@ def _check_text_to_image_params(
             "The pipeline `%s` does not support image or video input. The image or/and video file(s) will be ignored.",
             pl_cls_name,
         )
+
 
 def _check_control_text_to_image_params(
     pl_cls_name: str,
@@ -132,7 +133,7 @@ def guess_generation_mode(
         # Control TextToImage
         _check_control_text_to_image_params(pl_cls_name, generation_mode, image_file, video_file)
         return GenerationMode.CtrlTextToImage
-    
+
     if image_file is not None:
         _logger.warning(
             "Pipeline `%s` does not support image input. Will ignore the image file.",

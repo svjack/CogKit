@@ -93,10 +93,7 @@ def generate_video(
     if task == GenerationMode.TextToVideo:
         pipeline_out = pipeline_fn(prompt=enhanced_prompt)
     elif task == GenerationMode.ImageToVideo:
-        pipeline_out = pipeline_fn(
-            prompt=enhanced_prompt,
-            image=Image.open(image_file)
-            )
+        pipeline_out = pipeline_fn(prompt=enhanced_prompt, image=Image.open(image_file))
     else:
         err_msg = f"Unknown generation mode: {task.value}"
         raise ValueError(err_msg)
