@@ -6,11 +6,13 @@ from diffusers import (
     CogVideoXDPMScheduler,
     CogVideoXImageToVideoPipeline,
     CogVideoXPipeline,
+    CogView4ControlPipeline,
     CogView4Pipeline,
 )
 
 TVideoPipeline = CogVideoXPipeline | CogVideoXImageToVideoPipeline
 TPipeline = CogView4Pipeline | TVideoPipeline
+CogviewPipline = CogView4Pipeline | CogView4ControlPipeline
 
 
 def _is_cogvideox1_0(pipeline: TVideoPipeline) -> bool:
@@ -103,7 +105,7 @@ def guess_resolution(
     height: int | None = None,
     width: int | None = None,
 ) -> tuple[int, int]:
-    if isinstance(pipeline, CogView4Pipeline):
+    if isinstance(pipeline, CogviewPipline):
         return _guess_cogview_resolution(pipeline, height=height, width=width)
     if isinstance(pipeline, TVideoPipeline):
         return _guess_cogvideox_resolution(pipeline, height=height, width=width)

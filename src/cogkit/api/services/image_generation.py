@@ -3,7 +3,6 @@
 
 import numpy as np
 import os
-
 import torch
 
 from cogkit.api.logging import get_logger
@@ -27,14 +26,12 @@ class ImageGenerationService(object):
             before_generation(cogview4_pl, settings.offload_type)
             self._models["cogview-4"] = cogview4_pl
 
-        ### Check if loaded models are supported
         for model in self._models.keys():
             if model not in settings._supported_models:
                 raise ValueError(
                     f"Registered model {model} not in supported list: {settings._supported_models}"
                 )
 
-        ### Check if all supported models are loaded
         for model in settings._supported_models:
             if model not in self._models:
                 _logger.warning(f"Model {model} not loaded")
@@ -57,7 +54,6 @@ class ImageGenerationService(object):
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
 
-        # TODO: Refactor this to switch by LoRA endpoint API
         if lora_path is not None:
             adapter_name = os.path.basename(lora_path)
             _logger.info(f"Loaded LORA weights from {adapter_name}")
@@ -68,13 +64,12 @@ class ImageGenerationService(object):
 
         output = generate_image(
             prompt=prompt,
-            pipeline=self._models[model],
-            num_images_per_prompt=num_images,
-            output_type="np",
             height=height,
             width=width,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
+            num_images_per_prompt=num_images,
+            output_type="np",
         )
 
         image_lst = self.postprocess(output)
@@ -84,6 +79,7 @@ class ImageGenerationService(object):
         return model in self._models
 
     def postprocess(self, image_np: np.ndarray) -> list[np.ndarray]:
+        image_np = (image_np * 255).round().astype("uint8")
         image_lst = np.split(image_np, image_np.shape[0], axis=0)
         image_lst = [img.squeeze(0) for img in image_lst]
         return image_lst

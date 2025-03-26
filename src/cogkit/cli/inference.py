@@ -32,9 +32,17 @@ _logger = get_logger(__name__)
     help="the path to save the generated image/video. If not provided, the generated image/video will be saved to 'output.png/mp4'.",
 )
 @click.option(
+    "--task",
+    type=click.Choice(
+        choices=[mode.value for mode in GenerationMode],
+        case_sensitive=False,
+    ),
+    help="the generation task",
+)
+@click.option(
     "--image_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the image to guide the image/video generation (for i2i/i2v generation task)",
+    help="the image to guide the video generation (for i2v or ct2i generation task)",
 )
 @click.option(
     "--dtype",
@@ -150,7 +158,10 @@ def inference(
         _logger.info("Saving the generated video to path '%s'.", os.fspath(output_file))
         export_to_video(output[0], output_file, fps=fps)
 
-    elif task in (GenerationMode.TextToImage,):
+    elif task in (
+        GenerationMode.TextToImage,
+        GenerationMode.CtrlTextToImage,
+    ):
         batched_images = generate_image(
             prompt=prompt,
             pipeline=pipeline,
