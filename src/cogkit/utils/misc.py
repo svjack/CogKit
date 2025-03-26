@@ -3,7 +3,7 @@
 
 from diffusers import DiffusionPipeline
 from PIL import Image
-
+from pathlib import Path
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
 
@@ -14,6 +14,7 @@ _SUPPORTED_PIPELINE = (
     "CogView4Pipeline",
     "CogVideoXPipeline",
     "CogVideoXImageToVideoPipeline",
+    "CogView4ControlPipeline",
 )
 
 
@@ -34,6 +35,23 @@ def _check_text_to_image_params(
             "The pipeline `%s` does not support image input. The input image will be ignored.",
             pl_cls_name,
         )
+
+
+def _check_control_text_to_image_params(
+    pl_cls_name: str,
+    generation_mode: GenerationMode | None,
+    image: str | Path | None,
+) -> None:
+    if generation_mode is not None and generation_mode != GenerationMode.CtrlTextToImage:
+        _logger.warning(
+            "The pipeline `%s` does not support `%s` task. Will try the `%s` task.",
+            pl_cls_name,
+            generation_mode.value,
+            GenerationMode.CtrlTextToImage,
+        )
+    if image is not None:
+        err_msg = f"Image input is required in the image2video pipeline. Please provide a regular image file (image_file = {image})."
+        raise ValueError(err_msg)
 
 
 def _check_image_to_video_params(
@@ -66,7 +84,7 @@ def guess_generation_mode(
     if generation_mode is not None:
         generation_mode = GenerationMode(generation_mode)
 
-    if pl_cls_name.startswith("CogView"):
+    if pl_cls_name == "CogView4Pipeline":
         # TextToImage
         _check_text_to_image_params(pl_cls_name, generation_mode, image)
         return GenerationMode.TextToImage
@@ -74,6 +92,11 @@ def guess_generation_mode(
     if pl_cls_name == "CogVideoXImageToVideoPipeline":
         _check_image_to_video_params(pl_cls_name, generation_mode, image)
         return GenerationMode.ImageToVideo
+
+    if pl_cls_name == "CogView4ControlPipeline":
+        # Control TextToImage
+        _check_control_text_to_image_params(pl_cls_name, generation_mode, image)
+        return GenerationMode.CtrlTextToImage
 
     if image is not None:
         _logger.warning(
