@@ -7,7 +7,7 @@ import torch
 
 from cogkit.api.logging import get_logger
 from cogkit.api.settings import APISettings
-from cogkit.api.python import before_generation, generate_image
+from cogkit.api.python import generate_image
 from cogkit.utils import load_lora_checkpoint, unload_lora_checkpoint, load_pipeline
 
 _logger = get_logger(__name__)
@@ -25,7 +25,6 @@ class ImageGenerationService(object):
                 transformer_path=settings.cogview4_transformer_path,
                 dtype=torch_dtype,
             )
-            before_generation(cogview4_pl, settings.offload_type)
             self._models["cogview-4"] = cogview4_pl
             self._current_lora["cogview-4"] = None  # Initialize with no LORA loaded
 
@@ -34,7 +33,6 @@ class ImageGenerationService(object):
                 raise ValueError(
                     f"Registered model {model} not in supported list: {settings._supported_models}"
                 )
-
         for model in settings._supported_models:
             if model not in self._models:
                 _logger.warning(f"Model {model} not loaded")
@@ -57,7 +55,6 @@ class ImageGenerationService(object):
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
 
-        # Handle LORA only if there's a change
         if lora_path != self._current_lora[model]:
             if lora_path is not None:
                 adapter_name = os.path.basename(lora_path)
@@ -67,9 +64,7 @@ class ImageGenerationService(object):
                 _logger.info("Unloading LORA weights")
                 unload_lora_checkpoint(self._models[model])
 
-            # Update the current LORA tracking
             self._current_lora[model] = lora_path
-
         output = generate_image(
             prompt=prompt,
             height=height,
@@ -88,7 +83,6 @@ class ImageGenerationService(object):
         return model in self._models
 
     def postprocess(self, image_np: np.ndarray) -> list[np.ndarray]:
-        image_np = (image_np * 255).round().astype("uint8")
         image_lst = np.split(image_np, image_np.shape[0], axis=0)
         image_lst = [img.squeeze(0) for img in image_lst]
         return image_lst
