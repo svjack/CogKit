@@ -2,13 +2,12 @@
 
 
 import os
-
 import numpy as np
 import torch
 
 from cogkit.api.logging import get_logger
 from cogkit.api.settings import APISettings
-from cogkit.python import before_generation, generate_image
+from cogkit.python import generate_image
 from cogkit.utils import load_lora_checkpoint, load_pipeline, unload_lora_checkpoint
 
 _logger = get_logger(__name__)
@@ -17,6 +16,10 @@ _logger = get_logger(__name__)
 class ImageGenerationService(object):
     def __init__(self, settings: APISettings) -> None:
         self._models = {}
+
+        # TODO: Refactor this to switch by LoRA endpoint API
+        self._current_lora = {}  # Track currently loaded LORA for each model
+
         if settings.cogview4_path is not None:
             torch_dtype = torch.bfloat16 if settings.dtype == "bfloat16" else torch.float32
             cogview4_pl = load_pipeline(
@@ -24,17 +27,14 @@ class ImageGenerationService(object):
                 transformer_path=settings.cogview4_transformer_path,
                 dtype=torch_dtype,
             )
-            before_generation(cogview4_pl, settings.offload_type)
             self._models["cogview-4"] = cogview4_pl
+            self._current_lora["cogview-4"] = None  # Initialize with no LORA loaded
 
-        ### Check if loaded models are supported
         for model in self._models.keys():
             if model not in settings._supported_models:
                 raise ValueError(
                     f"Registered model {model} not in supported list: {settings._supported_models}"
                 )
-
-        ### Check if all supported models are loaded
         for model in settings._supported_models:
             if model not in self._models:
                 _logger.warning(f"Model {model} not loaded")
@@ -58,23 +58,25 @@ class ImageGenerationService(object):
         width, height = list(map(int, size.split("x")))
 
         # TODO: Refactor this to switch by LoRA endpoint API
-        if lora_path is not None:
-            adapter_name = os.path.basename(lora_path)
-            _logger.info(f"Loaded LORA weights from {adapter_name}")
-            load_lora_checkpoint(self._models[model], lora_path)
-        else:
-            _logger.info("Unloading LORA weights")
-            unload_lora_checkpoint(self._models[model])
+        if lora_path != self._current_lora[model]:
+            if lora_path is not None:
+                adapter_name = os.path.basename(lora_path)
+                _logger.info(f"Loading LORA weights from {adapter_name}")
+                load_lora_checkpoint(self._models[model], lora_path)
+            else:
+                _logger.info("Unloading LORA weights")
+                unload_lora_checkpoint(self._models[model])
 
+            self._current_lora[model] = lora_path
         output = generate_image(
             prompt=prompt,
-            pipeline=self._models[model],
-            num_images_per_prompt=num_images,
-            output_type="np",
             height=height,
+            pipeline=self._models[model],
             width=width,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
+            num_images_per_prompt=num_images,
+            output_type="np",
         )
 
         image_lst = self.postprocess(output)

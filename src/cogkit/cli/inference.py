@@ -34,7 +34,7 @@ _logger = get_logger(__name__)
 @click.option(
     "--image_file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False, readable=True),
-    help="the image to guide the image/video generation (for i2i/i2v generation task)",
+    help="the image to guide the video generation (for i2v or ct2i generation task)",
 )
 @click.option(
     "--dtype",
@@ -116,7 +116,6 @@ def inference(
     dtype = cast_to_torch_dtype(dtype)
     pipeline = load_pipeline(model_id_or_path, transformer_path, dtype)
     image = None
-    # TODO: No need to load the image every time. Some generation tasks cannot handle images.
     if image_file is not None:
         image = Image.open(image_file)
     task = guess_generation_mode(pipeline=pipeline, image=image)
@@ -150,7 +149,10 @@ def inference(
         _logger.info("Saving the generated video to path '%s'.", os.fspath(output_file))
         export_to_video(output[0], output_file, fps=fps)
 
-    elif task in (GenerationMode.TextToImage,):
+    elif task in (
+        GenerationMode.TextToImage,
+        GenerationMode.CtrlTextToImage,
+    ):
         batched_images = generate_image(
             prompt=prompt,
             pipeline=pipeline,
