@@ -11,9 +11,7 @@ authors = [{ name = 'ZhipuAI', email = 'opensource@zhipuai.cn' }]
 # maintainers = []
 dependencies = [
   "click~=8.1",
-  "datasets~=3.4",
-  "deepspeed~=0.16.4",
-  # "diffusers @ git+https://github.com/huggingface/diffusers.git",
+  "diffusers @ git+https://github.com/huggingface/diffusers.git",
   "imageio-ffmpeg~=0.6.0",
   "imageio~=2.37",
   "peft~=0.14.0",
@@ -21,16 +19,19 @@ dependencies = [
   "sentencepiece==0.2.0",
   "transformers~=4.49",
   "wandb~=0.19.8",
-  "av~=14.2.0",
-]
 
-[project.optional-dependencies]
-api = [
   "fastapi[standard]~=0.115.11",
   "fastapi_cli~=0.0.7",
   "openai~=1.67",
   "pydantic_settings~=2.8.1",
   "python-dotenv~=1.0",
+]
+
+[project.optional-dependencies]
+finetune = [
+  "datasets~=3.4",
+  "deepspeed~=0.16.4",
+  "av~=14.2.0",
 ]
 
 [project.urls]
