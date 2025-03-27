@@ -16,6 +16,8 @@ _logger = get_logger(__name__)
 class ImageGenerationService(object):
     def __init__(self, settings: APISettings) -> None:
         self._models = {}
+        self._current_lora = {}  # Track currently loaded LORA for each model
+
         if settings.cogview4_path is not None:
             torch_dtype = torch.bfloat16 if settings.dtype == "bfloat16" else torch.float32
             cogview4_pl = load_pipeline(
@@ -25,6 +27,7 @@ class ImageGenerationService(object):
             )
             before_generation(cogview4_pl, settings.offload_type)
             self._models["cogview-4"] = cogview4_pl
+            self._current_lora["cogview-4"] = None  # Initialize with no LORA loaded
 
         for model in self._models.keys():
             if model not in settings._supported_models:
@@ -54,17 +57,23 @@ class ImageGenerationService(object):
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
 
-        if lora_path is not None:
-            adapter_name = os.path.basename(lora_path)
-            _logger.info(f"Loaded LORA weights from {adapter_name}")
-            load_lora_checkpoint(self._models[model], lora_path)
-        else:
-            _logger.info("Unloading LORA weights")
-            unload_lora_checkpoint(self._models[model])
+        # Handle LORA only if there's a change
+        if lora_path != self._current_lora[model]:
+            if lora_path is not None:
+                adapter_name = os.path.basename(lora_path)
+                _logger.info(f"Loading LORA weights from {adapter_name}")
+                load_lora_checkpoint(self._models[model], lora_path)
+            else:
+                _logger.info("Unloading LORA weights")
+                unload_lora_checkpoint(self._models[model])
+
+            # Update the current LORA tracking
+            self._current_lora[model] = lora_path
 
         output = generate_image(
             prompt=prompt,
             height=height,
+            pipeline=self._models[model],
             width=width,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
