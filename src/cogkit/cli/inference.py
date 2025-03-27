@@ -9,7 +9,7 @@ import click
 from diffusers.utils import export_to_video
 from PIL import Image
 
-from cogkit.api.python import generate_image, generate_video
+from cogkit.python import generate_image, generate_video
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
 from cogkit.utils import (

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 
-import numpy as np
 import os
 
+import numpy as np
 import torch
 
 from cogkit.api.logging import get_logger
 from cogkit.api.settings import APISettings
-from cogkit.api.python import before_generation, generate_image
-from cogkit.utils import load_lora_checkpoint, unload_lora_checkpoint, load_pipeline
+from cogkit.python import before_generation, generate_image
+from cogkit.utils import load_lora_checkpoint, load_pipeline, unload_lora_checkpoint
 
 _logger = get_logger(__name__)
 
