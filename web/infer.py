@@ -79,12 +79,15 @@ def generate_images(
     num_inference_steps=1,
     guidance_scale=3.5,
     lora_path=None,
+    lora_scale=1.0,
 ):
+    # FIXME: server may not start with port 8000
     client = OpenAI(base_url="http://127.0.0.1:8000/v1/", api_key="EMPTY")
 
     extra_body = {
         "num_inference_steps": num_inference_steps,
         "guidance_scale": guidance_scale,
+        "lora_scale": lora_scale,
     }
 
     if lora_path and lora_path != "None":
@@ -109,6 +112,7 @@ def infer(
     num_inference_steps,
     guidance_scale,
     lora_path,
+    lora_scale,
     progress=gr.Progress(track_tqdm=True),
 ):
     images_data = generate_images(
@@ -119,6 +123,7 @@ def infer(
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
         lora_path=lora_path,
+        lora_scale=lora_scale,
     )
 
     image_results = []
@@ -210,7 +215,13 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                         step=0.1,
                         value=3.5,
                     )
-
+                    lora_scale = gr.Slider(
+                        label="Lora Scale",
+                        minimum=0,
+                        maximum=1,
+                        step=0.01,
+                        value=1,
+                    )
                 with gr.Row():
                     lora_path = gr.Dropdown(
                         label="Lora Path", choices=get_lora_paths(), value=get_lora_paths()[0]
@@ -226,12 +237,30 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
         refresh_button.click(refresh_lora_paths, inputs=[], outputs=[lora_path])
     run_button.click(
         fn=infer,
-        inputs=[prompt, width, height, num_images, num_inference_steps, guidance_scale, lora_path],
+        inputs=[
+            prompt,
+            width,
+            height,
+            num_images,
+            num_inference_steps,
+            guidance_scale,
+            lora_path,
+            lora_scale,
+        ],
         outputs=[result],
     )
     prompt.submit(
         fn=infer,
-        inputs=[prompt, width, height, num_images, num_inference_steps, guidance_scale, lora_path],
+        inputs=[
+            prompt,
+            width,
+            height,
+            num_images,
+            num_inference_steps,
+            guidance_scale,
+            lora_path,
+            lora_scale,
+        ],
         outputs=[result],
     )
 

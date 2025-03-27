@@ -52,6 +52,7 @@ class ImageGenerationService(object):
         num_inference_steps: int = 50,
         guidance_scale: float = 3.5,
         lora_path: str | None = None,
+        lora_scale: float = 1.0,
     ) -> list[np.ndarray]:
         if model not in self._models:
             raise ValueError(f"Model {model} not loaded")
@@ -62,7 +63,7 @@ class ImageGenerationService(object):
             if lora_path is not None:
                 adapter_name = os.path.basename(lora_path)
                 _logger.info(f"Loading LORA weights from {adapter_name}")
-                load_lora_checkpoint(self._models[model], lora_path)
+                load_lora_checkpoint(self._models[model], lora_path, lora_scale)
             else:
                 _logger.info("Unloading LORA weights")
                 unload_lora_checkpoint(self._models[model])
