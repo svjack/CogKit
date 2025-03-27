@@ -19,5 +19,8 @@ class APISettings(BaseSettings):
     # cogview-4 related settings
     cogview4_path: str | None = None
     cogview4_transformer_path: str | None = None
-    openai_api_key: str | None = None
     lora_dir: str | None = None
+
+    # prompt generation related settings
+    openai_api_key: str | None = None
+    openai_base_url: str | None = None

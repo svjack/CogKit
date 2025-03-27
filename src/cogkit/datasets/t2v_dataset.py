@@ -1,13 +1,13 @@
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import decord
 import torch
 from accelerate.logging import get_logger
 from datasets import load_dataset
 from safetensors.torch import load_file, save_file
 from torch.utils.data import Dataset
 from torchvision import transforms
+from torchvision.io import VideoReader
 from typing_extensions import override
 
 from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
@@ -117,13 +117,13 @@ class BaseT2VDataset(Dataset):
         }
 
     def preprocess(
-        self, video: decord.VideoReader, device: torch.device = torch.device("cpu")
+        self, video: VideoReader, device: torch.device = torch.device("cpu")
     ) -> torch.Tensor:
         """
         Loads and preprocesses a video.
 
         Args:
-            video: decord.VideoReader object
+            video: torchvision.io.VideoReader object
             device: torch.device
 
         Returns:
@@ -179,7 +179,7 @@ class T2VDatasetWithResize(BaseT2VDataset):
 
     @override
     def preprocess(
-        self, video: decord.VideoReader, device: torch.device = torch.device("cpu")
+        self, video: VideoReader, device: torch.device = torch.device("cpu")
     ) -> torch.Tensor:
         return preprocess_video_with_resize(
             video,

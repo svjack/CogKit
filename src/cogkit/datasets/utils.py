@@ -8,13 +8,7 @@ import numpy as np
 import torch
 from PIL import Image
 from safetensors.torch import load_file, save_file
-
-# Must import after torch because this can sometimes lead to a nasty segmentation fault, or stack smashing error
-# Very few bug reports but it happens. Look in decord Github issues for more relevant information.
-import decord  # isort:skip
-
-decord.bridge.set_bridge("torch")
-
+from torchvision.io import VideoReader
 
 ##########  loaders  ##########
 
@@ -104,7 +98,7 @@ def preprocess_image_with_resize(
 
 
 def preprocess_video_with_resize(
-    video: decord.VideoReader,
+    video: VideoReader,
     max_num_frames: int,
     height: int,
     width: int,
@@ -118,7 +112,7 @@ def preprocess_video_with_resize(
       2. If video dimensions don't match (height, width), resize frames
 
     Args:
-        video: decord.VideoReader object
+        video: torchvision.io.VideoReader object
         max_num_frames: Maximum number of frames to keep.
         height: Target height for resizing.
         width: Target width for resizing.
@@ -131,13 +125,15 @@ def preprocess_video_with_resize(
           H = height
           W = width
     """
-    video_num_frames = len(video)
+    frame_list = list(video)
+    video_num_frames = len(frame_list)
     if video_num_frames < max_num_frames:
         # Get all frames first
-        frames = video.get_batch(list(range(video_num_frames))).float().to(device)
+        frame_torch = torch.stack([f["data"] for f in frame_list])
+        # Shape of frame_torch: [F, C, H, W]
+        frames = frame_torch.float().to(device)
 
         # Resize frames to target dimensions
-        frames = frames.permute(0, 3, 1, 2)  # [F, H, W, C] -> [F, C, H, W]
         frames = torch.nn.functional.interpolate(
             frames,
             size=(height, width),
@@ -153,10 +149,10 @@ def preprocess_video_with_resize(
 
     else:
         indices = list(range(0, video_num_frames, video_num_frames // max_num_frames))
-        frames = video.get_batch(indices).float().to(device)
+        # Shape of frames: [F, C, H, W]
+        frames = torch.stack([frame_list[i]["data"] for i in indices]).float().to(device)
 
         # Resize frames to target dimensions
-        frames = frames.permute(0, 3, 1, 2)  # [F, H, W, C] -> [F, C, H, W]
         frames = torch.nn.functional.interpolate(
             frames,
             size=(height, width),

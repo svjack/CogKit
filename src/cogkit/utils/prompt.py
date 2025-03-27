@@ -1,12 +1,16 @@
-import os
 import re
+import os
+from dotenv import load_dotenv
 
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
-from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 
-load_dotenv(find_dotenv(".env.template"))
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 
 _logger = get_logger(__name__)
 
@@ -118,12 +122,12 @@ def convert_prompt(
     task: GenerationMode,
     retry_times: int = 5,
 ) -> str:
-    if not os.environ.get("OPENAI_API_KEY"):
+    if not OPENAI_API_KEY:
         _logger.warning("OPENAI_API_KEY not found, the original prompt will be used directly")
         return prompt
     client = OpenAI(
-        api_key=os.environ.get("OPENAI_API_KEY"),
-        base_url=os.environ.get("OPENAI_BASE_URL"),
+        api_key=OPENAI_API_KEY,
+        base_url=OPENAI_BASE_URL,
     )
     messages = []
     prompt = clean_string(prompt)

@@ -11,6 +11,7 @@ from PIL import Image
 from safetensors.torch import load_file, save_file
 from torch.utils.data import Dataset
 from torchvision import transforms
+from torchvision.io import VideoReader
 from typing_extensions import override
 
 from cogkit.finetune.diffusion.constants import LOG_LEVEL, LOG_NAME
@@ -23,13 +24,6 @@ from .utils import (
 
 if TYPE_CHECKING:
     from cogkit.finetune.diffusion.trainer import DiffusionTrainer
-
-# ! Must be imported after `torch`.
-# ! Otherwise, a nasty segmentation fault, or stack smashing error may occur.
-# ! See: https://github.com/dmlc/decord/issues/293
-import decord  # isort:skip
-
-decord.bridge.set_bridge("torch")
 
 logger = get_logger(LOG_NAME, LOG_LEVEL)
 
@@ -63,11 +57,23 @@ class BaseI2VDataset(Dataset):
 
         if using_train:
             self.data_root = self.data_root / "train"
-            video_data = load_dataset("videofolder", data_dir=self.data_root, split="train")
-            try:
-                image_data = load_dataset("imagefolder", data_dir=self.data_root, split="train")
+            metadata_path = self.data_root / "metadata.jsonl"
+            video_path = self.data_root / "videos"
+            image_path = self.data_root / "images"
 
-                video_data = video_data.sort("id")
+            metadata = load_dataset("json", data_files=str(metadata_path), split="train")
+            video_data = load_dataset("videofolder", data_dir=video_path, split="train")
+            metadata = metadata.sort("id")
+            video_data = video_data.sort("id")
+
+            def update_with_prompt(video_example, idx):
+                video_example["prompt"] = metadata[idx]["prompt"]
+                return video_example
+
+            video_data = video_data.map(update_with_prompt, with_indices=True)
+
+            if image_path.exists():
+                image_data = load_dataset("imagefolder", data_dir=image_path, split="train")
                 image_data = image_data.sort("id")
 
                 # Map function to update video dataset with corresponding images
@@ -77,20 +83,20 @@ class BaseI2VDataset(Dataset):
 
                 self.data = video_data.map(update_with_image, with_indices=True)
 
-            except ValueError:
+            else:
                 logger.warning(
                     f"No image data found in {self.data_root}, using first frame of video instead"
                 )
 
                 def add_first_frame(example):
-                    video: decord.VideoReader = example["video"]
-                    first_frame = video[0][0]
-                    first_frame = first_frame.permute(2, 0, 1)  # [H, W, C] -> [C, H, W]
+                    assert len(example["video"]) == 1
+                    video: VideoReader = example["video"][0]
+                    # shape of first_frame: [C, H, W]
+                    first_frame = next(video)["data"]
                     to_pil = transforms.ToPILImage()
                     example["image"] = [to_pil(first_frame)]
                     return example
 
-                # self.data = video_data.map(add_first_frame)
                 self.data = video_data.with_transform(add_first_frame)
 
         else:
@@ -174,7 +180,7 @@ class BaseI2VDataset(Dataset):
 
     def preprocess(
         self,
-        video: decord.VideoReader | None,
+        video: VideoReader | None,
         image: Image.Image | None,
         device: torch.device = torch.device("cpu"),
     ) -> tuple[torch.Tensor, torch.Tensor]:
@@ -183,7 +189,7 @@ class BaseI2VDataset(Dataset):
         If either path is None, no preprocessing will be done for that input.
 
         Args:
-            video: decord.VideoReader object
+            video: torchvision.io.VideoReader object
             image: PIL.Image.Image object
             device: Device to load the data on
 
@@ -259,7 +265,7 @@ class I2VDatasetWithResize(BaseI2VDataset):
     @override
     def preprocess(
         self,
-        video: decord.VideoReader | None,
+        video: VideoReader | None,
         image: Image.Image | None,
         device: torch.device = torch.device("cpu"),
     ) -> tuple[torch.Tensor, torch.Tensor]:

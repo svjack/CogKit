@@ -9,7 +9,7 @@ import click
 from diffusers.utils import export_to_video
 from PIL import Image
 
-from cogkit.api.python import generate_image, generate_video
+from cogkit.python import generate_image, generate_video
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
 from cogkit.utils import (
@@ -30,14 +30,6 @@ _logger = get_logger(__name__)
     "--output_file",
     type=click.Path(dir_okay=False, writable=True),
     help="the path to save the generated image/video. If not provided, the generated image/video will be saved to 'output.png/mp4'.",
-)
-@click.option(
-    "--task",
-    type=click.Choice(
-        choices=[mode.value for mode in GenerationMode],
-        case_sensitive=False,
-    ),
-    help="the generation task",
 )
 @click.option(
     "--image_file",
@@ -124,7 +116,6 @@ def inference(
     dtype = cast_to_torch_dtype(dtype)
     pipeline = load_pipeline(model_id_or_path, transformer_path, dtype)
     image = None
-    # TODO: No need to load the image every time. Some generation tasks cannot handle images.
     if image_file is not None:
         image = Image.open(image_file)
     task = guess_generation_mode(pipeline=pipeline, image=image)
