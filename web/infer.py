@@ -59,11 +59,7 @@ def get_lora_paths():
     if not os.path.exists(lora_dir):
         os.makedirs(lora_dir, exist_ok=True)
         return ["None"]
-    checkpoint_dirs = [
-        d
-        for d in os.listdir(lora_dir)
-        if os.path.isdir(os.path.join(lora_dir, d)) and d.startswith("checkpoint")
-    ]
+    checkpoint_dirs = [d for d in os.listdir(lora_dir) if os.path.isdir(os.path.join(lora_dir, d))]
 
     if not checkpoint_dirs:
         return ["None"]
@@ -206,7 +202,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
                         minimum=1,
                         maximum=50,
                         step=1,
-                        value=1,
+                        value=50,
                     )
                     guidance_scale = gr.Slider(
                         label="Guidance Scale",
