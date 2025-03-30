@@ -57,15 +57,17 @@ class ImageGenerationService(object):
         if model not in self._models:
             raise ValueError(f"Model {model} not loaded")
         width, height = list(map(int, size.split("x")))
-
         # TODO: Refactor this to switch by LoRA endpoint API
         if lora_path != self._current_lora[model]:
             if lora_path is not None:
                 adapter_name = os.path.basename(lora_path)
-                _logger.info(f"Loading LORA weights from {adapter_name}")
+                _logger.info(
+                    f"Loading LORA weights from {adapter_name} and unload previous weights {self._current_lora[model]}"
+                )
+                unload_lora_checkpoint(self._models[model])
                 load_lora_checkpoint(self._models[model], lora_path, lora_scale)
             else:
-                _logger.info("Unloading LORA weights")
+                _logger.info(f"Unloading LORA weights {self._current_lora[model]}")
                 unload_lora_checkpoint(self._models[model])
 
             self._current_lora[model] = lora_path
