@@ -217,7 +217,7 @@ def get_image_embedding(
 
     if not hasattr(image, "filename"):
         logger.warning("Image object does not have filename attribute, skipping caching.")
-        return encode_fn(image).to("cpu")
+        return encode_fn(image.convert("RGB")).to("cpu")
 
     filename = Path(image.filename).stem
     filename_hash = str(hashlib.sha256(filename.encode()).hexdigest())
@@ -230,7 +230,7 @@ def get_image_embedding(
             main_process_only=False,
         )
     else:
-        encoded_image = encode_fn(image)
+        encoded_image = encode_fn(image.convert("RGB"))
         encoded_image = encoded_image.to("cpu")
         save_file({"encoded_image": encoded_image}, encoded_image_path)
         logger.info(
