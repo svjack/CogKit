@@ -53,7 +53,7 @@ def test_packing_constraint(packed_length, num_samples):
 # ==============================================================================
 
 
-class TestDataset(Dataset):
+class CustomTestDataset(Dataset):
     def __init__(self, lengths):
         self.lengths = lengths
 
@@ -71,7 +71,7 @@ def packing_test_config(request):
     data = [random.randint(1, packed_length // random.randint(1, 4)) for _ in range(num_samples)]
     random_lengths = torch.tensor(data)
 
-    dataset = TestDataset(random_lengths)
+    dataset = CustomTestDataset(random_lengths)
 
     return {
         "num_samples": num_samples,
