@@ -9,11 +9,10 @@ fixed-size batches while preserving sampling randomness.
 from torch.utils.data import Sampler
 from typing import List, Iterator
 import random
-import torch
 
 
 class NaivePackingSampler(Sampler):
-    def __init__(self, length_list: torch.Tensor, packed_length: int, shuffle: bool = True):
+    def __init__(self, length_list: list[int], packed_length: int, shuffle: bool = True):
         # expect length_list is a 1d int tensor
         self.length_list = length_list
         self.packed_length = packed_length
