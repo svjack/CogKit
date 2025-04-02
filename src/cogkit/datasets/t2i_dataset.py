@@ -63,6 +63,13 @@ class BaseT2IDataset(Dataset):
         self.encode_image = trainer.encode_image
         self.trainer = trainer
 
+        self.to_tensor = transforms.ToTensor()
+        self._image_transforms = transforms.Compose(
+            [
+                transforms.Lambda(lambda x: x / 255.0 * 2.0 - 1.0),
+            ]
+        )
+
     def __len__(self) -> int:
         return len(self.data)
 
@@ -116,7 +123,7 @@ class BaseT2IDataset(Dataset):
         Returns:
             - image(torch.Tensor) of shape [C, H, W]
         """
-        raise NotImplementedError("Subclass must implement this method")
+        return self.to_tensor(image)
 
     def image_transform(self, image: torch.Tensor) -> torch.Tensor:
         """
@@ -132,7 +139,7 @@ class BaseT2IDataset(Dataset):
         Returns:
             torch.Tensor: The transformed image tensor
         """
-        raise NotImplementedError("Subclass must implement this method")
+        return self._image_transforms(image)
 
 
 class T2IDatasetWithResize(BaseT2IDataset):
@@ -154,10 +161,6 @@ class T2IDatasetWithResize(BaseT2IDataset):
         self.height = train_resolution[0]
         self.width = train_resolution[1]
 
-        self.__image_transforms = transforms.Compose(
-            [transforms.Lambda(lambda x: x / 255.0 * 2.0 - 1.0)]
-        )
-
     @override
     def preprocess(
         self,
@@ -167,6 +170,31 @@ class T2IDatasetWithResize(BaseT2IDataset):
         image = preprocess_image_with_resize(image, self.height, self.width, device)
         return image
 
-    @override
-    def image_transform(self, image: torch.Tensor) -> torch.Tensor:
-        return self.__image_transforms(image)
+
+class T2IDatasetWithPacking(Dataset):
+    """
+    This dataset class packs multiple samples from a base Text-to-Image dataset.
+    It should be used combined with PackingSampler.
+    """
+
+    def __init__(
+        self,
+        base_dataset: BaseT2IDataset,
+        *args,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        assert type(base_dataset) is BaseT2IDataset  # should literally be a BaseT2IDataset
+        self.base_dataset = base_dataset
+
+    def __getitem__(self, index: list[int]) -> dict[str, Any]:
+        return {
+            "image": [self.base_dataset[i]["image"] for i in index],
+            "encoded_image": [self.base_dataset[i]["encoded_image"] for i in index],
+            "prompt": [self.base_dataset[i]["prompt"] for i in index],
+            "prompt_embedding": [self.base_dataset[i]["prompt_embedding"] for i in index],
+        }
+
+    def __len__(self) -> int:
+        return len(self.base_dataset)

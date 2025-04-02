@@ -21,6 +21,9 @@ class DiffusionArgs(BaseArgs):
     enable_slicing: bool = True
     enable_tiling: bool = True
 
+    ########## Packing #########
+    enable_packing: bool = False
+
     ########## Validation ##########
     gen_fps: int = 15
 
@@ -61,8 +64,11 @@ class DiffusionArgs(BaseArgs):
         parser.add_argument("--train_resolution", type=str, required=True)
 
         # Model configuration
-        parser.add_argument("--enable_slicing", type=bool, default=True)
-        parser.add_argument("--enable_tiling", type=bool, default=True)
+        parser.add_argument("--enable_slicing", action="store_true")
+        parser.add_argument("--enable_tiling", action="store_true")
+
+        # Packing
+        parser.add_argument("--enable_packing", action="store_true")
 
         # Validation
         parser.add_argument("--gen_fps", type=int, default=15)

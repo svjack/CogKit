@@ -22,6 +22,7 @@ from cogkit.finetune.utils import unwrap_model
 
 class Cogview4Trainer(DiffusionTrainer):
     UNLOAD_LIST = ["text_encoder", "vae"]
+    MAX_TTOKEN_LENGTH = 224
 
     @override
     def load_components(self) -> DiffusionComponents:
@@ -63,7 +64,7 @@ class Cogview4Trainer(DiffusionTrainer):
         prompt_token_ids = self.components.tokenizer(
             prompt,
             padding="max_length",
-            max_length=224,
+            max_length=self.MAX_TTOKEN_LENGTH,
             truncation=True,
             add_special_tokens=True,
             return_tensors="pt",
@@ -71,7 +72,7 @@ class Cogview4Trainer(DiffusionTrainer):
         prompt_embedding = self.components.text_encoder(
             prompt_token_ids.to(self.accelerator.device), output_hidden_states=True
         ).hidden_states[-2][0]
-        # shape of prompt_embedding: [sequence length(224), embedding dimension(4096)]
+        # shape of prompt_embedding: [sequence length(self.MAX_TTOKEN_LENGTH), embedding dimension(4096)]
         return prompt_embedding
 
     @override
@@ -94,6 +95,7 @@ class Cogview4Trainer(DiffusionTrainer):
 
             ret["prompt"].append(prompt)
             ret["prompt_embedding"].append(prompt_embedding)
+            # image and encoded_image maybe None during validation
             if image is not None:
                 ret["image"].append(image)
             if encoded_image is not None:
@@ -106,14 +108,14 @@ class Cogview4Trainer(DiffusionTrainer):
         attention_mask = self.components.tokenizer(
             prompts,
             padding="max_length",
-            max_length=224,
+            max_length=self.MAX_TTOKEN_LENGTH,
             truncation=True,
             add_special_tokens=True,
             return_tensors="pt",
         ).attention_mask
         ret["attention_mask"] = attention_mask
 
-        # shape of prompt_embedding: [batch_size, max_sequence_length(224), embedding_dim(4096)]
+        # shape of prompt_embedding: [batch_size, max_sequence_length(self.MAX_TTOKEN_LENGTH), embedding_dim(4096)]
         assert ret["attention_mask"].shape == ret["prompt_embedding"].shape[:2]
 
         return ret

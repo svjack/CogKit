@@ -45,7 +45,9 @@ def show_supported_models():
             print(f"  • {training_type}")
 
 
-def get_model_cls(model_type: str, training_type: Literal["lora", "sft"]) -> "BaseTrainer":
+def get_model_cls(
+    model_type: str, training_type: Literal["lora", "sft"], use_packing: bool = False
+) -> "BaseTrainer":
     """Get the trainer class for a specific model and training type."""
     if model_type not in SUPPORTED_MODELS:
         print(f"\nModel '{model_type}' is not supported.")
@@ -53,6 +55,9 @@ def get_model_cls(model_type: str, training_type: Literal["lora", "sft"]) -> "Ba
         for supported_model in SUPPORTED_MODELS:
             print(f"  • {supported_model}")
         raise ValueError(f"Model '{model_type}' is not supported")
+
+    if use_packing:
+        training_type = f"{training_type}-packing"
 
     if training_type not in SUPPORTED_MODELS[model_type]:
         print(f"\nTraining type '{training_type}' is not supported for model '{model_type}'.")

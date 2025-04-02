@@ -65,8 +65,8 @@ class BaseTrainer(ABC):
         self.logger = get_logger(self.LOG_NAME, self.LOG_LEVEL)
 
         self.args = self._init_args()
-        self.state = self._init_state()
         self.components = self.load_components()
+        self.state = self._init_state()
 
         self.accelerator: Accelerator = None
         self.train_dataset: Dataset = None

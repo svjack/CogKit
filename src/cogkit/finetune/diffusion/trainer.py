@@ -9,8 +9,8 @@ from accelerate.utils import (
 from PIL import Image
 from typing_extensions import override
 
-from cogkit.datasets import I2VDatasetWithResize, T2IDatasetWithResize, T2VDatasetWithResize
 from cogkit.finetune.base import BaseTrainer
+from cogkit.samplers import NaivePackingSampler
 from diffusers.pipelines import DiffusionPipeline
 from diffusers.utils.export_utils import export_to_video
 
@@ -56,11 +56,33 @@ class DiffusionTrainer(BaseTrainer):
         # TODO: refactor later
         match self.args.model_type:
             case "i2v":
+                from cogkit.datasets import BaseI2VDataset, I2VDatasetWithResize
+
                 dataset_cls = I2VDatasetWithResize
+                if self.args.enable_packing:
+                    dataset_cls = BaseI2VDataset
+                    raise NotImplementedError("Packing for I2V is not implemented")
+
             case "t2v":
+                from cogkit.datasets import BaseT2VDataset, T2VDatasetWithResize
+
                 dataset_cls = T2VDatasetWithResize
+                if self.args.enable_packing:
+                    dataset_cls = BaseT2VDataset
+                    raise NotImplementedError("Packing for T2V is not implemented")
+
             case "t2i":
+                from cogkit.datasets import (
+                    BaseT2IDataset,
+                    T2IDatasetWithResize,
+                    T2IDatasetWithPacking,
+                )
+
                 dataset_cls = T2IDatasetWithResize
+                if self.args.enable_packing:
+                    dataset_cls = BaseT2IDataset
+                    dataset_cls_packing = T2IDatasetWithPacking
+
             case _:
                 raise ValueError(f"Invalid model type: {self.args.model_type}")
 
@@ -114,14 +136,31 @@ class DiffusionTrainer(BaseTrainer):
         unload_model(self.components.text_encoder)
         free_memory()
 
-        self.train_data_loader = torch.utils.data.DataLoader(
-            self.train_dataset,
-            collate_fn=self.collate_fn,
-            batch_size=self.args.batch_size,
-            num_workers=self.args.num_workers,
-            pin_memory=self.args.pin_memory,
-            shuffle=True,
-        )
+        if not self.args.enable_packing:
+            self.train_data_loader = torch.utils.data.DataLoader(
+                self.train_dataset,
+                collate_fn=self.collate_fn,
+                batch_size=self.args.batch_size,
+                num_workers=self.args.num_workers,
+                pin_memory=self.args.pin_memory,
+                shuffle=True,
+            )
+        else:
+            length_list = [self.sample_to_length(sample) for sample in self.train_dataset]
+            self.train_dataset = dataset_cls_packing(self.train_dataset)
+            self.train_data_loader = torch.utils.data.DataLoader(
+                self.train_dataset,
+                collate_fn=self.collate_fn_packing,
+                batch_size=self.args.batch_size,
+                num_workers=self.args.num_workers,
+                pin_memory=self.args.pin_memory,
+                sampler=NaivePackingSampler(
+                    length_list,
+                    self.state.training_seq_length,
+                    shuffle=True,
+                ),
+            )
+
         if self.args.do_validation:
             self.test_data_loader = torch.utils.data.DataLoader(
                 self.test_dataset,
@@ -314,7 +353,7 @@ class DiffusionTrainer(BaseTrainer):
     def compute_loss(self, batch) -> torch.Tensor:
         raise NotImplementedError
 
-    def collate_fn(self, examples: list[dict[str, Any]]):
+    def collate_fn(self, samples: list[dict[str, Any]]):
         raise NotImplementedError
 
     def initialize_pipeline(self) -> DiffusionPipeline:
@@ -338,3 +377,14 @@ class DiffusionTrainer(BaseTrainer):
         self,
     ) -> list[tuple[str, Image.Image | list[Image.Image]]]:
         raise NotImplementedError
+
+    # ==========  Packing related functions  ==========
+    def sample_to_length(self, sample: dict[str, Any]) -> int:
+        """Map sample to length for packing sampler"""
+        raise NotImplementedError
+
+    def collate_fn_packing(self, samples: list[dict[str, list[Any]]]) -> dict[str, Any]:
+        """Collate function for packing sampler"""
+        raise NotImplementedError
+
+    # =================================================

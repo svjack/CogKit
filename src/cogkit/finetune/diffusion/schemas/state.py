@@ -14,6 +14,10 @@ class DiffusionState(BaseState):
     # for image input, train_resolution = (height, width)
     train_resolution: tuple[int, int, int] | tuple[int, int]
 
+    # packing realted
+    max_vtoken_length: int | None = None
+    training_seq_length: int | None = None
+
     validation_prompts: list[str] = []
     validation_images: list[Path | None] = []
     validation_videos: list[Path | None] = []
