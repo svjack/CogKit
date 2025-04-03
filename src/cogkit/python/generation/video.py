@@ -81,7 +81,7 @@ def generate_video(
     """
 
     task = guess_generation_mode(
-        pipeline=pipeline,
+        pipeline_or_path=pipeline,
         generation_mode=None,
         image=input_image,
     )

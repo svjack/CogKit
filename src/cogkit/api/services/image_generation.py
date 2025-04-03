@@ -23,7 +23,8 @@ class ImageGenerationService(object):
         if settings.cogview4_path is not None:
             torch_dtype = torch.bfloat16 if settings.dtype == "bfloat16" else torch.float32
             cogview4_pl = load_pipeline(
-                settings.cogview4_path,
+                model_id_or_path=settings.cogview4_path,
+                lora_model_id_or_path=None,
                 transformer_path=settings.cogview4_transformer_path,
                 dtype=torch_dtype,
             )

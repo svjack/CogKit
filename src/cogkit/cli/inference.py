@@ -15,11 +15,9 @@ from cogkit.types import GenerationMode
 from cogkit.utils import (
     cast_to_torch_dtype,
     guess_generation_mode,
-    load_lora_checkpoint,
     load_pipeline,
     mkdir,
     resolve_path,
-    unload_lora_checkpoint,
 )
 
 _logger = get_logger(__name__)
@@ -114,16 +112,11 @@ def inference(
     """
 
     dtype = cast_to_torch_dtype(dtype)
-    pipeline = load_pipeline(model_id_or_path, transformer_path, dtype)
+    pipeline = load_pipeline(model_id_or_path, lora_model_id_or_path, transformer_path, dtype)
     image = None
     if image_file is not None:
         image = Image.open(image_file)
-    task = guess_generation_mode(pipeline=pipeline, image=image)
-
-    if lora_model_id_or_path is not None:
-        load_lora_checkpoint(pipeline, lora_model_id_or_path)
-    else:
-        unload_lora_checkpoint(pipeline)
+    task = guess_generation_mode(pipeline_or_path=pipeline, image=image)
 
     if task in (
         GenerationMode.TextToVideo,
