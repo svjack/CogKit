@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from diffusers import DiffusionPipeline
-from PIL import Image
 from pathlib import Path
+
+from PIL import Image
+
 from cogkit.logging import get_logger
 from cogkit.types import GenerationMode
+from cogkit.utils.diffusion_pipeline import get_pipeline_meta
+from diffusers import DiffusionPipeline
 
 _logger = get_logger(__name__)
 
@@ -72,11 +75,14 @@ def _check_image_to_video_params(
 
 
 def guess_generation_mode(
-    pipeline: DiffusionPipeline,
+    pipeline_or_path: DiffusionPipeline | str,
     generation_mode: str | GenerationMode | None = None,
     image: Image.Image | None = None,
 ) -> GenerationMode:
-    pl_cls_name = pipeline.__class__.__name__
+    if isinstance(pipeline_or_path, str):
+        pl_cls_name = get_pipeline_meta(pipeline_or_path)["cls_name"]
+    else:
+        pl_cls_name = pipeline_or_path.__class__.__name__
 
     if pl_cls_name not in _SUPPORTED_PIPELINE:
         err_msg = f"The pipeline '{pl_cls_name}' is not supported."
