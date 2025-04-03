@@ -106,7 +106,6 @@ class Cogview4LoraPackingTrainer(Cogview4Trainer):
 
     @override
     def compute_loss(self, batch: dict[str, Any]) -> torch.Tensor:
-        """ """
         patch_size = self.components.transformer.config.patch_size
         prompt_embeds = batch["prompt_embedding"]
         latent = batch["encoded_image"]
@@ -154,12 +153,13 @@ class Cogview4LoraPackingTrainer(Cogview4Trainer):
         sigmas = mu / (mu + (1 / sigmas - 1))
         sigmas = torch.flip(sigmas, dims=[1])
         sigmas = torch.cat([sigmas, torch.zeros((batch_size, 1), device=sigmas.device)], dim=1)
-        self.components.scheduler.sigmas = sigmas.to("cpu")
+        self.components.scheduler.sigmas = sigmas
 
         timestep = torch.randint(
             0,
             scheduler.config.num_train_timesteps,
             (batch_size,),
+            device=self.accelerator.device,
         )
 
         noise = torch.randn_like(latent)
@@ -187,13 +187,12 @@ class Cogview4LoraPackingTrainer(Cogview4Trainer):
             target_size=target_size,
             crop_coords=crop_coords,
             return_dict=False,
-            # attention_mask=text_attention_mask,
             attention_mask=attn_mask,
         )[0]
 
         pixel_mask = batch["pixel_mask"]
         pixel_mask[pixel_mask == 0] = 1
-        pixel_mask[pixel_mask == 1] = 0
+        pixel_mask[pixel_mask == -1] = 0
         loss = torch.mean(((noise_pred_cond - model_label) ** 2) * pixel_mask, dim=(1, 2, 3))
         loss = loss.mean()
 
