@@ -19,12 +19,13 @@ dependencies = [
   "sentencepiece==0.2.0",
   "transformers~=4.49",
   "wandb~=0.19.8",
-
   "fastapi[standard]~=0.115.11",
   "fastapi_cli~=0.0.7",
   "openai~=1.67",
   "pydantic_settings~=2.8.1",
   "python-dotenv~=1.0",
+  "gradio~=5.23",
+  "python-slugify>=8.0.4",
 ]
 
 [project.optional-dependencies]
