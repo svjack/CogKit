@@ -1,5 +1,3 @@
-# CogView4 Configuration
-
 # Model Configuration
 model:
   model_path: "THUDM/CogVideoX1.5-5B"  # Path to the pre-trained model
