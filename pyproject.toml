@@ -25,7 +25,7 @@ dependencies = [
   "pydantic_settings~=2.8.1",
   "python-dotenv~=1.0",
   "gradio~=5.23",
-  "python-slugify>=8.0.4",
+  "python-slugify~=8.0",
 ]
 
 [project.optional-dependencies]
