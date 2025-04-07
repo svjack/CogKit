@@ -9,6 +9,7 @@ from utils import (
     get_logger,
     get_lora_checkpoint_dirs,
     get_lora_checkpoint_rootdir,
+    get_resolutions,
 )
 
 import gradio as gr
@@ -75,22 +76,11 @@ def update_task(hf_model_id: str) -> Tuple[gr.Dropdown, gr.Component]:
 
     # Configure resolution dropdown based on task
     if task == GenerationMode.TextToImage:
-        resolution_list = [
-            "512x512",
-            "512x768",
-            "512x1024",
-            "720x1280",
-            "768x768",
-            "1024x1024",
-            "1080x1920",
-        ]
+        resolution_list = get_resolutions(task)
         default_resolution = resolution_list[0]
         resolution_info = "Height x Width"
     elif task == GenerationMode.TextToVideo:
-        resolution_list = [
-            "49x480x720",
-            "81x768x1360",
-        ]
+        resolution_list = get_resolutions(task)
         default_resolution = resolution_list[0]
         resolution_info = "Frames x Height x Width"
     else:
