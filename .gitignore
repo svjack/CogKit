@@ -263,3 +263,6 @@ tmp/
 
 webdoc/
 **/wandb/
+
+**/lora_checkpoints
+**/.gradio
