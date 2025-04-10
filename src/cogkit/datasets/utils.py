@@ -6,6 +6,7 @@ from typing import Callable
 import cv2
 import numpy as np
 import torch
+from filelock import FileLock
 from PIL import Image
 from safetensors.torch import load_file, save_file
 from torchvision.io import VideoReader
@@ -187,24 +188,26 @@ def get_prompt_embedding(
 
     prompt_hash = str(hashlib.sha256(prompt.encode()).hexdigest())
     prompt_embedding_path = prompt_embeddings_dir / (prompt_hash + ".safetensors")
+    lock = FileLock(str(prompt_embedding_path) + ".lock")
 
-    if prompt_embedding_path.exists():
-        prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
-        logger.debug(
-            f"Loaded prompt embedding from {prompt_embedding_path}",
-            main_process_only=False,
-        )
-    else:
-        prompt_embedding = encode_fn(prompt)
-        assert prompt_embedding.ndim == 2
-        # shape of prompt_embedding: [seq_len, hidden_size]
+    with lock:
+        if prompt_embedding_path.exists():
+            prompt_embedding = load_file(prompt_embedding_path)["prompt_embedding"]
+            logger.debug(
+                f"Loaded prompt embedding from {prompt_embedding_path}",
+                main_process_only=False,
+            )
+        else:
+            prompt_embedding = encode_fn(prompt)
+            assert prompt_embedding.ndim == 2
+            # shape of prompt_embedding: [seq_len, hidden_size]
 
-        prompt_embedding = prompt_embedding.to("cpu")
-        save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
-        logger.info(
-            f"Saved prompt embedding to {prompt_embedding_path}",
-            main_process_only=False,
-        )
+            prompt_embedding = prompt_embedding.to("cpu")
+            save_file({"prompt_embedding": prompt_embedding}, prompt_embedding_path)
+            logger.info(
+                f"Saved prompt embedding to {prompt_embedding_path}",
+                main_process_only=False,
+            )
 
     return prompt_embedding
 
