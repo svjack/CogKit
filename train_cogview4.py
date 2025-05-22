@@ -27,14 +27,14 @@ import os
 from datasets import load_dataset
 
 # 加载数据集
-ds = load_dataset("svjack/Xiang_InfiniteYou_Handsome_Pics_Captioned")
+ds = load_dataset("svjack/genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned")
 
 # 创建目录结构
-os.makedirs("Xiang_InfiniteYou_Handsome_Pics_Captioned/train/images", exist_ok=True)
-os.makedirs("Xiang_InfiniteYou_Handsome_Pics_Captioned/test", exist_ok=True)
+os.makedirs("genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned/train/images", exist_ok=True)
+os.makedirs("genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned/test", exist_ok=True)
 
 # 处理训练集
-with open("Xiang_InfiniteYou_Handsome_Pics_Captioned/train/metadata.jsonl", "w") as f:
+with open("genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned/train/metadata.jsonl", "w") as f:
     for idx, example in enumerate(ds["train"]):
         # 生成唯一文件名（如果原图没有filename属性）
         #image_path = f"images/{idx:05d}.png"  # 使用5位数字编号
@@ -42,24 +42,24 @@ with open("Xiang_InfiniteYou_Handsome_Pics_Captioned/train/metadata.jsonl", "w")
 
         # 保存图片（PIL对象直接保存）
         example["image"].save(
-            os.path.join("Xiang_InfiniteYou_Handsome_Pics_Captioned/train", image_path)
+            os.path.join("genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned/train", image_path)
         )
 
         # 写入元数据
         metadata = {
             "file_name": image_path.split("/")[-1],
-            "prompt": example["joy-caption"]
+            "prompt": example["prompt"]
         }
         f.write(json.dumps(metadata, ensure_ascii=False) + "\n")  # 处理中文
 
 # 处理测试集（取前3个样本作为示例）
-with open("Xiang_InfiniteYou_Handsome_Pics_Captioned/test/prompt.jsonl", "w") as f:
+with open("genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned/test/prompt.jsonl", "w") as f:
     for idx, example in enumerate(ds["train"]):
         if idx >= 5:
             break
         # 写入元数据
         metadata = {
-            "prompt": example["joy-caption"]
+            "prompt": example["prompt"]
         }
         f.write(json.dumps(metadata, ensure_ascii=False) + "\n")  # 处理中文
 
@@ -75,14 +75,14 @@ model_path: "THUDM/CogView4-6B"
 model_type: "t2i"
 
 # ================ Output ================
-output_dir: "/home/featurize/CogKit/gradio/lora_checkpoints/t2i/xiang-ckpt"
+output_dir: "/home/featurize/CogKit/gradio/lora_checkpoints/t2i/KAEDEHARA-KAZUHA-ckpt"
 
 # ================ Tracker ================
 #report_to: "tensorboard"  # Options: ["wandb"]
 report_to: null
 
 # ================ Data ================
-data_root: "/home/featurize/CogKit/quickstart/data/Xiang_InfiniteYou_Handsome_Pics_Captioned"
+data_root: "../genshin_impact_KAEDEHARA_KAZUHA_Omni_Captioned"
 
 # ================ Training ================
 seed: 42
@@ -112,8 +112,8 @@ low_vram: false
 train_resolution: [1024, 1024]  # [Height, Width]
 
 train_epochs: 500
-batch_size: 2
-gradient_accumulation_steps: 8
+batch_size: 1
+gradient_accumulation_steps: 4
 mixed_precision: "bf16"  # Options: ["fp32", "fp16", "bf16"]
 learning_rate: 2.0e-5
 
@@ -121,13 +121,13 @@ num_workers: 8
 pin_memory: true
 nccl_timeout: 1800
 
-checkpointing_steps: 128
+checkpointing_steps: 50
 checkpointing_limit: 20
 resume_from_checkpoint: null  # or "/path/to/checkpoint/dir"
 
 # ================ Validation ================
 do_validation: true
-validation_steps: 128  # Must be a multiple of `checkpointing_steps`
+validation_steps: 50  # Must be a multiple of `checkpointing_steps`
 ```
 
 torchrun \
